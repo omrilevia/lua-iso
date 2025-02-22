@@ -10,10 +10,14 @@ function Tile:new(texId, pos)
 	local constants = Constants()
 	Tile.super.new(self, texId, pos)
 	self.tilePath = constants.TILE_ASSET_PATH .. "tile-" .. texId .. ".png"
+	print(self.isDirty)
 end
 
 function Tile:load()
 	self.image = love.graphics.newImage(self.tilePath)
+end
+
+function Tile:update(dt)
 end
 
 function Tile:draw()
@@ -23,6 +27,7 @@ function Tile:draw()
 
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	local vecIso = iso:transform(self.pos)
+	print(iso:inverse():transform(vecIso).x)
 
 	love.graphics.draw(self.image, constants.X_OFFSET + vecIso.x, constants.Y_OFFSET + vecIso.y + zOffset)
 end
