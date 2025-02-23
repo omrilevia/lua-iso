@@ -18,6 +18,8 @@ function love.load()
 	screen = Screen()
 	grid = Grid()
 	grid:load()
+
+	--assert(screen:getGameCoordAt(Vec2(750, 100)).x == 1)
 end
 
 function love.update(dt)	
