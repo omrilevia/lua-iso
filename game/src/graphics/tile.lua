@@ -10,7 +10,6 @@ function Tile:new(texId, pos)
 	local constants = Constants()
 	Tile.super.new(self, texId, pos)
 	self.tilePath = constants.TILE_ASSET_PATH .. "tile-" .. texId .. ".png"
-	print(self.isDirty)
 end
 
 function Tile:load()
@@ -27,9 +26,11 @@ function Tile:draw()
 
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	local vecIso = iso:transform(self.pos)
-	print(iso:inverse():transform(vecIso).x)
+	assert(iso:inverse():transform(vecIso).x == self.pos.x)
+	assert(iso:inverse():transform(vecIso).y == self.pos.y)
 
-	love.graphics.draw(self.image, constants.X_OFFSET + vecIso.x, constants.Y_OFFSET + vecIso.y + zOffset)
+	-- scoot the image to the left by TILE_WIDTH/2, so that the center of the image lies on the origin. 
+	love.graphics.draw(self.image, constants.X_OFFSET + vecIso.x - constants.TILE_WIDTH/2, constants.Y_OFFSET + vecIso.y + zOffset)
 end
 
 

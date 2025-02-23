@@ -7,7 +7,8 @@ end
 function Grid:load(grid)
 	local constants = Constants()
 	if not grid then
-		local numberGen = love.math.newRandomGenerator(os.time())
+		love.math.setRandomSeed(os.time())
+		local numberGen = love.math.newRandomGenerator()
 		for i = 1, constants.GRID_SIZE do
 			local row = {}
 			for j = 1, constants.GRID_SIZE do
@@ -29,10 +30,14 @@ function Grid:update(dt)
 	local mouse = Mouse()
 	local screen = Screen()
 	local gameCoord = screen:getGameCoordAt(mouse:getPos())
-	local gridCoord = Vec2(math.floor(gameCoord.x) - 1, math.floor(gameCoord.y))
-	if gridCoord.x >= 1 and gridCoord.x <= constants.GRID_SIZE then
-		self.highlighted = self.grid[gridCoord.x][gridCoord.y]
+	local gridCoord = Vec2(math.floor(gameCoord.x), math.floor(gameCoord.y))
+	if gridCoord.x >= 1 and gridCoord.x <= constants.GRID_SIZE and 
+		gridCoord.y >= 1 and gridCoord.y <= constants.GRID_SIZE then
+			self.highlighted = self.grid[gridCoord.x][gridCoord.y]
+	else
+		self.highlighted = nil
 	end
+	
 end
 
 function Grid:draw()
