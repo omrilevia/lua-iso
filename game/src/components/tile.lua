@@ -1,6 +1,6 @@
-require "src.model.GameObject"
-require "src.math2d.iso"
-Tile = GameObject:extend()
+require "src.components.component"
+require "src.math2.iso"
+Tile = Component:extend()
 
 function Tile:new(texId, pos)
 	--texId 7 is broken

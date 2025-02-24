@@ -5,17 +5,17 @@ end
 function love.load()
 	imgui = require "lib.imgui"
 	Object = require "lib.classic"
-	require "src.model.GameObject"
-	require "src.math2d.mat2"
-	require "src.math2d.iso"
-	require "src.math2d.vec2"
+	require "src.components.component"
+	require "src.math2.mat2"
+	require "src.math2.iso"
+	require "src.math2.vec2"
 	require "src.components.grid"
-	require "src.components.constants"
+	require "src.engine.constants"
 	require "src.components.sprite"
 	require "src.components.tile"
 	require "src.engine.mouse"
 	require "src.engine.screen"
-	require "src.engine.gui"
+	require "src.components.gui"
 
 	mouse = Mouse()
 	screen = Screen()

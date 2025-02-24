@@ -1,4 +1,4 @@
-Mouse = Object:extend()
+Mouse = Component:extend()
 
 function Mouse:new()
 	self.x = love.mouse:getX()
@@ -16,6 +16,13 @@ end
 function Mouse:getPos()
 	return Vec2(self.x, self.y)
 end
+
+function Mouse:attachComponent(component)
+	self.componentAttached = component
+end
+
+
+
 
 
 

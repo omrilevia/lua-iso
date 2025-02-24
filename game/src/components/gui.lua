@@ -1,6 +1,6 @@
 imgui = require "lib.imgui"
 require "src.components.sprite"
-Gui = GameObject:extend()
+Gui = Component:extend()
 
 local showTestWindow = false
 local showAnotherWindow = false
@@ -10,7 +10,8 @@ local clearColor = { 0.2, 0.2, 0.2 }
 local comboSelection = 1
 local textValue = "text"
 
-function Gui:new()
+function Gui:new(id, pos)
+	Gui.super:new(id, pos)
 end
 
 function Gui:load()
