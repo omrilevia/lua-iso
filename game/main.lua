@@ -3,40 +3,73 @@ if arg[2] == "debug" then
 end
 
 function love.load()
-	Object = require "src.dependencies.classic"
+	imgui = require "lib.imgui"
+	Object = require "lib.classic"
 	require "src.model.GameObject"
 	require "src.math2d.mat2"
 	require "src.math2d.iso"
 	require "src.math2d.vec2"
-	require "src.graphics.grid"
-	require "src.graphics.constants"
-	require "src.graphics.tile"
-	require "src.util.mouse"
-	require "src.util.screen"
+	require "src.components.grid"
+	require "src.components.constants"
+	require "src.components.sprite"
+	require "src.components.tile"
+	require "src.engine.mouse"
+	require "src.engine.screen"
+	require "src.engine.gui"
 
 	mouse = Mouse()
 	screen = Screen()
 	grid = Grid()
+	gui = Gui()
+	gui:load()
 	grid:load()
-
 	--assert(screen:getGameCoordAt(Vec2(750, 100)).x == 1)
 end
 
 function love.update(dt)	
 	mouse:update(dt)
 	grid:update(dt)
+	gui:update(dt)
 end
 
 function love.draw()
 	grid:draw()
-	love.graphics.print("Screen coord: " .. mouse:getPos().x .. " " .. mouse:getPos().y .. "\n")
-	love.graphics.print("Game coord: " .. screen:getGameCoordAt(mouse:getPos()).x .. " " .. screen:getGameCoordAt(mouse:getPos()).y, 0, 50)
+	gui:draw()
+end
+
+function love.quit()
+    gui:shutdown();
+end
+
+--
+-- User inputs
+--
+function love.textinput(t)
+    gui:textinput(t)
 end
 
 function love.keypressed(key)
-	if key == "space" then
-		love.graphics.captureScreenshot(os.time() .. '-test.png')
-	end
+    gui:keypressed(key)
+end
+
+function love.keyreleased(key)
+    gui:keyreleased(key)
+end
+
+function love.mousemoved(x, y)
+    gui:mousemoved(x, y)
+end
+
+function love.mousepressed(x, y, button)
+    gui:mousepressed(x, y, button)
+end
+
+function love.mousereleased(x, y, button)
+    gui:mousereleased(x, y, button)
+end
+
+function love.wheelmoved(x, y)
+    gui:wheelmoved(x, y)
 end
 
 

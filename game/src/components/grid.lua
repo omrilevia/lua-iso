@@ -1,4 +1,4 @@
-Grid = Object:extend()
+Grid = GameObject:extend()
 
 function Grid:new()
 	self.grid = {}
