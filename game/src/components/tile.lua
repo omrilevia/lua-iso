@@ -1,19 +1,22 @@
-require "src.components.component"
+require "src.engine.component"
 require "src.math2.iso"
-Tile = Component:extend()
+Tile = Sprite:extend()
 
 function Tile:new(texId, pos)
 	--texId 7 is broken
 	if texId == 6 then
 		texId = texId + 1
 	end
+	self.id = texId
 	local constants = Constants()
-	Tile.super.new(self, texId, pos)
 	self.tilePath = constants.TILE_ASSET_PATH .. "tile-" .. texId .. ".png"
+	self.pos = pos
+	self.image = love.graphics.newImage(self.tilePath)
+	Tile.super:new(texId, pos, self.image)
 end
 
 function Tile:load()
-	self.image = love.graphics.newImage(self.tilePath)
+	
 end
 
 function Tile:update(dt)
@@ -21,7 +24,7 @@ end
 
 function Tile:draw()
 	local constants = Constants()
-	-- transform the tile's position to isometric coords
+	-- transform the tile's position to an isometric screen coord
 	local zOffset = constants.MAX_TILE_HEIGHT - self.image:getHeight()
 
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)

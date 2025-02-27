@@ -1,5 +1,4 @@
 imgui = require "lib.imgui"
-require "src.components.sprite"
 Gui = Component:extend()
 
 local showTestWindow = false
@@ -14,10 +13,19 @@ function Gui:new(id, pos)
 	Gui.super:new(id, pos)
 end
 
-function Gui:load()
-	sprites = {}
-	table.insert(sprites, Sprite(64, 64)) 
-    table.insert(sprites, Sprite(64, 64))
+function Gui:load(scene)
+	local constants = Constants()
+	self.sprites = {} 
+
+	for i = 1, constants.NUM_TILE_TYPES do
+		if i == 6 then
+			-- tile is broken
+		else 
+			table.insert(self.sprites, {id = i, img = love.graphics.newImage(constants.TILE_ASSET_PATH .. "tile-" .. i .. ".png") })
+		end
+	end
+
+	Gui.super:load(scene)
 end
 
 function Gui:update(dt)
@@ -32,16 +40,17 @@ function Gui:draw()
     local itemSpacing = imgui.ImGuiStyleVar_ItemSpacing
 
     local windowX2 = windowPos + windowSize
-    for i, sprite in ipairs(sprites) do
-        local spriteWidth = sprite.width 
-        local spriteHeight = sprite.height
+    for i, sprite in ipairs(self.sprites) do
+        local spriteWidth = sprite.img:getWidth()
+        local spriteHeight = sprite.img:getHeight()
 
         imgui.PushID(i)
 
         -- Using imageButton for sprite display
-        if imgui.ImageButton(sprite.image, spriteWidth, spriteHeight) then
-            -- Handle object pickup here, like generating a new object for the level editor
-            pickedObject = {sprite = sprite, x = 100, y = 100}  -- Example of picking up an object
+        if imgui.ImageButton(sprite.img, spriteWidth, spriteHeight) then
+			local mouseX = love.mouse:getX()
+			local mouseY = love.mouse:getY()
+			self.super.scene:getComponent("mouse"):attachSprite(Sprite(sprite.id, Vec2(mouseX, mouseY), sprite.img))
         end
 
         imgui.PopID()
@@ -51,22 +60,9 @@ function Gui:draw()
         local lastButtonX2 = lastButtonPos
         local nextButtonX2 = lastButtonX2 + itemSpacing + spriteWidth
 
-        if i + 1 <= #sprites and nextButtonX2 < windowX2 then
+        if i + 1 <= #self.sprites and nextButtonX2 < windowX2 then
             imgui.SameLine()
         end
-    end
-
-    -- Handle picked object and its movement (just a simple example here)
-    if pickedObject then
-        -- Here, you could add logic to update the picked object position based on mouse movement
-        pickedObject.x = love.mouse.getX() - pickedObject.sprite.width / 2
-        pickedObject.y = love.mouse.getY() - pickedObject.sprite.height / 2
-    end
-
-    -- Draw the picked object
-    if pickedObject then
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(pickedObject.sprite.image, pickedObject.x, pickedObject.y)
     end
 
     imgui.End()
@@ -98,6 +94,9 @@ function Gui:mousemoved(x, y)
 end
 
 function Gui:mousepressed(x, y, button)
+	if self.scene:getComponent("mouse"):getSpriteAttached() then
+		self.scene:getComponent("mouse"):place()
+	end
     imgui.MousePressed(button)
 end
 
