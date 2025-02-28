@@ -9,4 +9,6 @@ function Constants:new()
 	self.MAX_TILE_HEIGHT = 150
 	self.X_OFFSET = love.graphics.getWidth() / 2
 	self.Y_OFFSET = 50
+	self.HINTS = true
 end
+

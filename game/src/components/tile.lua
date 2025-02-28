@@ -16,7 +16,8 @@ function Tile:new(texId, pos)
 end
 
 function Tile:load()
-	
+	local constants = Constants()
+	self.image = love.graphics.newImage(constants.TILE_ASSET_PATH .. "water.png")
 end
 
 function Tile:update(dt)

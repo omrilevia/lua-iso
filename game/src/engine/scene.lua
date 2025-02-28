@@ -4,9 +4,12 @@ function Scene:new(components)
 	self.components = components
 end
 
-function Scene:load()
+function Scene:load(bus)
+	-- set self as the listener/broadcaster for events. give bus to components to publish events.
+	bus:setBroadcaster(self)
+
 	for i, val in ipairs(self.components) do
-		val:load(self)
+		val:load(bus)
 	end
 end
 
@@ -24,7 +27,9 @@ function Scene:draw()
 end
 
 function Scene:event(event)
-	
+	for _, component in ipairs(self.components) do
+		component:handleEvent(event)
+	end
 end
 
 function Scene:shutdown()

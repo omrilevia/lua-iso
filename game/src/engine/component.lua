@@ -6,8 +6,8 @@ function Component:new(id, pos)
 	self.pos = pos
 end
 
-function Component:load(scene)
-	self.scene = scene
+function Component:load(bus)
+	self.bus = bus
 end
 
 function Component:update(dt)
@@ -17,6 +17,7 @@ function Component:draw()
 end
 
 function Component:handleEvent(event)
+	
 end
 
 function Component:shutdown()

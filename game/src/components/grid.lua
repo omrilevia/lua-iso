@@ -20,6 +20,7 @@ function Grid:load(scene)
 		for j = 0, constants.GRID_SIZE do
 			local randomTex = numberGen:random(1, constants.NUM_TILE_TYPES)
 			local tile = Tile(randomTex, Vec2(i, j))
+			tile:load()
 			table.insert(row, j, {pos = Vec2(i, j), tile = tile})
 		end
 		table.insert(self.grid, i, row)
@@ -90,7 +91,11 @@ function Grid:draw()
 	local util = Util()
 	local gameCoord = util:getGameCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()))
 	local gridCoord = Vec2(math.floor(gameCoord.x), math.floor(gameCoord.y))
-	love.graphics.print("grid coord: " .. gridCoord.x .. " " .. gridCoord.y, 0, 100)
+	local constants = Constants() 
+
+	if constants.HINTS then
+		love.graphics.print("grid coord: " .. gridCoord.x .. " " .. gridCoord.y, 0, 50)
+	end
 
 	for _, x in ipairs(self.xKeys) do
 		local column = self.grid[x]
@@ -104,6 +109,12 @@ function Grid:draw()
 		end
 	end
 
+end
+
+function Grid:handleEvent(event)
+	if event.name == "placeTile" then
+		self:addTile(event.payload)
+	end
 end
 
 function Grid:addTile(sprite)

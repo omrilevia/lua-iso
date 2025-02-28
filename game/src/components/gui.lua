@@ -13,7 +13,9 @@ function Gui:new(id, pos)
 	Gui.super:new(id, pos)
 end
 
-function Gui:load(scene)
+function Gui:load(bus)
+	Gui.super:load(bus)
+
 	local constants = Constants()
 	self.sprites = {} 
 
@@ -25,7 +27,7 @@ function Gui:load(scene)
 		end
 	end
 
-	Gui.super:load(scene)
+	
 end
 
 function Gui:update(dt)
@@ -50,7 +52,7 @@ function Gui:draw()
         if imgui.ImageButton(sprite.img, spriteWidth, spriteHeight) then
 			local mouseX = love.mouse:getX()
 			local mouseY = love.mouse:getY()
-			self.super.scene:getComponent("mouse"):attachSprite(Sprite(sprite.id, Vec2(mouseX, mouseY), sprite.img))
+			self.super.bus:event(Event("mouse", Sprite(sprite.id, Vec2(mouseX, mouseY), sprite.img)))
         end
 
         imgui.PopID()
@@ -94,9 +96,6 @@ function Gui:mousemoved(x, y)
 end
 
 function Gui:mousepressed(x, y, button)
-	if self.scene:getComponent("mouse"):getSpriteAttached() then
-		self.scene:getComponent("mouse"):place()
-	end
     imgui.MousePressed(button)
 end
 
