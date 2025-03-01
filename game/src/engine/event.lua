@@ -1,7 +1,6 @@
 Event = Object:extend()
 
-function Event:new(name, payload)
+function Event:new(name)
 	self.name = name
-	self.payload = payload
 end
 

@@ -67,14 +67,21 @@ function Grid:update(dt)
 	end
 	
 	-- Check for a tile add. 
-	for i, tile in ipairs(self.queue) do 
-		if not self.grid[tile.pos.x] then
-			self.grid[tile.pos.x] = {}
-		elseif self.grid[tile.pos.x][tile.pos.y] then
-			self.grid[gridCoord.x][gridCoord.y] = nil
+	for i, event in ipairs(self.queue) do 
+		if event.type == "add" then
+			local tile = event.obj
+			if not self.grid[tile.pos.x] then
+				self.grid[tile.pos.x] = {}
+			elseif self.grid[tile.pos.x][tile.pos.y] then
+				self.grid[gridCoord.x][gridCoord.y] = nil
+			end
+	
+			self.grid[tile.pos.x][tile.pos.y] = {pos = Vec2(tile.pos.x, tile.pos.y), tile = tile}
+		elseif event.type == "remove" then
+			if self.grid[event.obj.x] then
+				self.grid[event.obj.x][event.obj.y] = nil
+			end
 		end
-
-		self.grid[tile.pos.x][tile.pos.y] = {pos = Vec2(tile.pos.x, tile.pos.y), tile = tile}
 	end
 
 	-- Only need to sort the grid if a tile was added.
@@ -88,15 +95,6 @@ function Grid:update(dt)
 end
 
 function Grid:draw()
-	local util = Util()
-	local gameCoord = util:getGameCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()))
-	local gridCoord = Vec2(math.floor(gameCoord.x), math.floor(gameCoord.y))
-	local constants = Constants() 
-
-	if constants.HINTS then
-		love.graphics.print("grid coord: " .. gridCoord.x .. " " .. gridCoord.y, 0, 50)
-	end
-
 	for _, x in ipairs(self.xKeys) do
 		local column = self.grid[x]
 
@@ -112,8 +110,10 @@ function Grid:draw()
 end
 
 function Grid:handleEvent(event)
-	if event.name == "placeTile" then
-		self:addTile(event.payload)
+	if event.name == "PlaceTile" then
+		self:addTile(event.sprite)
+	elseif event.name == "RemoveTile" then
+		self:removeTile(event)
 	end
 end
 
@@ -124,7 +124,13 @@ function Grid:addTile(sprite)
 	local gridCoord = Vec2(math.floor(gameCoord.x), math.floor(gameCoord.y))
 	print("Grid:addTile. " .. gridCoord.x .. " " .. gridCoord.y .. " tile: " .. sprite.id)
 	
-	table.insert(self.queue, Tile(sprite.id, Vec2(gridCoord.x, gridCoord.y)))
+	table.insert(self.queue, { type = "add", obj = Tile(sprite.id, Vec2(gridCoord.x, gridCoord.y)) } )
+end
+
+function Grid:removeTile(event)
+	print("Grid:removeTile. " .. event.pos.x .. " " .. event.pos.y)
+
+	table.insert(self.queue, { type = "remove", obj = event.pos })
 end
 
 

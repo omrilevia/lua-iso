@@ -19,6 +19,10 @@ function love.load()
 	require "src.engine.scene"
 	require "src.engine.bus"
 	require "src.engine.event"
+	require "src.engine.events.mousetile"
+	require "src.engine.events.placetile"
+	require "src.engine.events.removetile"
+	require "src.engine.events.dragaddtile"
 	
 	bus = Bus()
 	currentScene = Scene({ Grid("grid"), Gui("gui"), Mouse("mouse") })
