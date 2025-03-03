@@ -10,6 +10,9 @@ function Component:load(bus)
 	self.bus = bus
 end
 
+function Component:save()
+end
+
 function Component:update(dt)
 end
 
@@ -17,7 +20,7 @@ function Component:draw()
 end
 
 function Component:handleEvent(event)
-	
+
 end
 
 function Component:shutdown()

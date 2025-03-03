@@ -1,6 +1,6 @@
 require "src.engine.component"
 require "src.math2.iso"
-Tile = Sprite:extend()
+Tile = Component:extend()
 
 function Tile:new(texId, pos)
 	--texId 7 is broken
@@ -11,13 +11,10 @@ function Tile:new(texId, pos)
 	local constants = Constants()
 	self.tilePath = constants.TILE_ASSET_PATH .. "tile-" .. texId .. ".png"
 	self.pos = pos
-	self.image = love.graphics.newImage(self.tilePath)
-	Tile.super:new(texId, pos, self.image)
 end
 
 function Tile:load()
-	local constants = Constants()
-	self.image = love.graphics.newImage(constants.TILE_ASSET_PATH .. "water.png")
+	self.image = love.graphics.newImage(self.tilePath)
 end
 
 function Tile:update(dt)

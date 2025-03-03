@@ -12,7 +12,6 @@ function love.load()
 	require "src.math2.util"
 	require "src.components.grid"
 	require "src.engine.constants"
-	require "src.engine.sprite"
 	require "src.components.tile"
 	require "src.components.mouse"
 	require "src.components.gui"
@@ -23,9 +22,12 @@ function love.load()
 	require "src.engine.events.placetile"
 	require "src.engine.events.removetile"
 	require "src.engine.events.dragaddtile"
-	
+	require "src.components.button"
 	bus = Bus()
-	currentScene = Scene({ Grid("grid"), Gui("gui"), Mouse("mouse") })
+
+	button = Button("save button", Vec2(0, 300), function () return bus:event(Event("save")) end)
+	currentScene = Scene({ Grid("grid"), Gui("gui"), Mouse("mouse"), button })
+
 	currentScene:load(bus)
 end
 
@@ -49,6 +51,9 @@ function love.textinput(t)
 end
 
 function love.keypressed(key)
+	if key == "s" then
+		button:press()
+	end
     currentScene:keypressed(key)
 end
 

@@ -64,7 +64,7 @@ function Gui:draw()
         if imgui.ImageButton(sprite.img, spriteWidth, spriteHeight) then
 			local mouseX = love.mouse:getX()
 			local mouseY = love.mouse:getY()
-			self.super.bus:event(MouseTile(Sprite(sprite.id, Vec2(mouseX, mouseY), sprite.img)))
+			self.super.bus:event(MouseTile(Tile(sprite.id, Vec2(mouseX, mouseY))))
         end
 
         imgui.PopID()

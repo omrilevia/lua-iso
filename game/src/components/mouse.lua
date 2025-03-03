@@ -39,14 +39,14 @@ end
 function Mouse:attachSprite(sprite)
 	print("Mouse:attachSprite. id " .. sprite.id .. " pos " .. sprite.pos.x .. " " .. sprite.pos.y)
 	self.spriteAttached = sprite
+	self.spriteAttached:load()
 end
 
 function Mouse:place()
 	local currentPos = Vec2(love.mouse:getX(), love.mouse:getY())
 	self.spriteAttached.pos = currentPos
 	print("Mouse:place. " .. "id " .. self.spriteAttached.id .. " pos " .. self.spriteAttached.pos.x .. " " .. self.spriteAttached.pos.y)
-	self.super.bus:event(PlaceTile(Sprite(self.spriteAttached.id, self.spriteAttached.pos, self.spriteAttached.img)))
-	--self.spriteAttached = nil
+	self.super.bus:event(PlaceTile(self.spriteAttached))
 end
 
 function Mouse:getSpriteAttached()

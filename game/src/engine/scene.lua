@@ -7,10 +7,27 @@ end
 function Scene:load(bus)
 	-- set self as the listener/broadcaster for events. give bus to components to publish events.
 	bus:setBroadcaster(self)
+	local data = {}
+	-- load saved data
+	if love.filesystem.getInfo("savedata.txt") then
+		local file = love.filesystem.read("savedata.txt")
+		data = lume.deserialize(file) or {}
+	end
 
 	for i, val in ipairs(self.components) do
-		val:load(bus)
+		local componentData = data[val.id]
+		val:load(bus, componentData)
 	end
+end
+
+function Scene:save()
+	local data = {}
+
+	for i, val in ipairs(self.components) do 
+		data[val.id] = val:save()
+	end
+
+	love.filesystem.write("savedata", data)
 end
 
 function Scene:update(dt)
@@ -27,6 +44,11 @@ function Scene:draw()
 end
 
 function Scene:event(event)
+	if event.id == "save" then
+		self:save()
+		return
+	end
+
 	for _, component in ipairs(self.components) do
 		component:handleEvent(event)
 	end

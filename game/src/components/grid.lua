@@ -1,3 +1,5 @@
+lume = require "lib.lume"
+
 Grid = Component:extend()
 
 function Grid:new(id)
@@ -9,17 +11,21 @@ function Grid:new(id)
 	Grid.super.new(self, id, Vec2(0, 0))
 end
 
-function Grid:load(scene)
+function Grid:load(scene, grid)
 	Grid.super:load(scene)
 
+	local grid = grid or {}
 	local constants = Constants()
+
 	love.math.setRandomSeed(os.time())
 	local numberGen = love.math.newRandomGenerator()
+
 	for i = 0, constants.GRID_SIZE do
 		local row = {}
+		local savedRow = grid[i] or {}
 		for j = 0, constants.GRID_SIZE do
-			local randomTex = numberGen:random(1, constants.NUM_TILE_TYPES)
-			local tile = Tile(randomTex, Vec2(i, j))
+			local id = savedRow[j] or numberGen:random(1, constants.NUM_TILE_TYPES)
+			local tile = Tile(id, Vec2(i, j))
 			tile:load()
 			table.insert(row, j, {pos = Vec2(i, j), tile = tile})
 		end
@@ -27,6 +33,20 @@ function Grid:load(scene)
 	end
 	
 	self:sortTiles()
+end
+
+function Grid:save() 
+	local map = {}
+
+	for xIndex, row in pairs(self.grid) do
+		local mapRow = {}
+		map[xIndex] = mapRow
+		for yIndex, tile in pairs(row) do
+			map[xIndex][yIndex] = tile.id
+		end
+	end
+
+	return lume.serialize(map)
 end
 
 function Grid:sortTiles()
@@ -66,7 +86,7 @@ function Grid:update(dt)
 		self.highlighted = nil
 	end
 	
-	-- Check for a tile add. 
+	-- Check for a tile add or remove. 
 	for i, event in ipairs(self.queue) do 
 		if event.type == "add" then
 			local tile = event.obj
@@ -75,7 +95,12 @@ function Grid:update(dt)
 			elseif self.grid[tile.pos.x][tile.pos.y] then
 				self.grid[gridCoord.x][gridCoord.y] = nil
 			end
-	
+			
+			-- Ensure tile is loaded.
+			if not tile.image then
+				tile:load()
+			end
+
 			self.grid[tile.pos.x][tile.pos.y] = {pos = Vec2(tile.pos.x, tile.pos.y), tile = tile}
 		elseif event.type == "remove" then
 			if self.grid[event.obj.x] then
