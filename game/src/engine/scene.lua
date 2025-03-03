@@ -2,6 +2,7 @@ Scene = Object:extend()
 
 function Scene:new(components)
 	self.components = components
+	self.queue = {}
 end
 
 function Scene:load(bus)
@@ -9,8 +10,8 @@ function Scene:load(bus)
 	bus:setBroadcaster(self)
 	local data = {}
 	-- load saved data
-	if love.filesystem.getInfo("savedata.txt") then
-		local file = love.filesystem.read("savedata.txt")
+	if love.filesystem.getInfo("savedata") then
+		local file = love.filesystem.read("savedata")
 		data = lume.deserialize(file) or {}
 	end
 
@@ -21,13 +22,15 @@ function Scene:load(bus)
 end
 
 function Scene:save()
+	print("Scene:save.")
 	local data = {}
 
 	for i, val in ipairs(self.components) do 
 		data[val.id] = val:save()
 	end
 
-	love.filesystem.write("savedata", data)
+	love.filesystem.write("savedata", lume.serialize(data))
+	assert(love.filesystem.getInfo("savedata"))
 end
 
 function Scene:update(dt)
@@ -35,6 +38,16 @@ function Scene:update(dt)
 		-- circular, but easy way for components to call back into the scene for basic events.
 		val:update(dt)
 	end
+
+	if #self.queue > 0 then
+		for i, ev in ipairs(self.queue) do
+			if ev.name == "save" then
+				self:save()
+			end
+		end
+	end
+
+	self.queue = {}
 end
 
 function Scene:draw()
@@ -44,8 +57,8 @@ function Scene:draw()
 end
 
 function Scene:event(event)
-	if event.id == "save" then
-		self:save()
+	if event.name == "save" then
+		table.insert(self.queue, event)
 		return
 	end
 

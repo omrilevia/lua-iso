@@ -11,26 +11,40 @@ function Grid:new(id)
 	Grid.super.new(self, id, Vec2(0, 0))
 end
 
-function Grid:load(scene, grid)
+function Grid:load(scene, tiles)
 	Grid.super:load(scene)
 
-	local grid = grid or {}
 	local constants = Constants()
 
 	love.math.setRandomSeed(os.time())
 	local numberGen = love.math.newRandomGenerator()
 
-	for i = 0, constants.GRID_SIZE do
-		local row = {}
-		local savedRow = grid[i] or {}
-		for j = 0, constants.GRID_SIZE do
-			local id = savedRow[j] or numberGen:random(1, constants.NUM_TILE_TYPES)
-			local tile = Tile(id, Vec2(i, j))
-			tile:load()
-			table.insert(row, j, {pos = Vec2(i, j), tile = tile})
+	if tiles then
+		print(lume.serialize(tiles))
+		
+		for _, tile in ipairs(tiles) do
+			local tileVal = Tile(tile.id, Vec2(tile.x, tile.y))
+			tileVal:load()
+
+			if not self.grid[tile.x] then
+				self.grid[tile.x] = {}
+			end
+
+			self.grid[tile.x][tile.y] = {pos = Vec2(tile.x, tile.y), tile = tileVal}
 		end
-		table.insert(self.grid, i, row)
-	end
+	else
+		for i = 0, constants.GRID_SIZE do
+			local row = {}
+
+			for j = 0, constants.GRID_SIZE do
+				local id = numberGen:random(1, constants.NUM_TILE_TYPES)
+				local tile = Tile(id, Vec2(i, j))
+				tile:load()
+				table.insert(row, j, {pos = Vec2(i, j), tile = tile})
+			end
+			table.insert(self.grid, i, row)
+		end
+    end
 	
 	self:sortTiles()
 end
@@ -38,15 +52,16 @@ end
 function Grid:save() 
 	local map = {}
 
-	for xIndex, row in pairs(self.grid) do
-		local mapRow = {}
-		map[xIndex] = mapRow
-		for yIndex, tile in pairs(row) do
-			map[xIndex][yIndex] = tile.id
+	for _, x in ipairs(self.xKeys) do
+		for _, y in ipairs(self.yKeys[x]) do
+			local tile = self.grid[x][y]
+
+			table.insert(map, {x = tile.pos.x, y = tile.pos.y, id = tile.tile.id})
 		end
 	end
 
-	return lume.serialize(map)
+	print(lume.serialize(map))
+	return map
 end
 
 function Grid:sortTiles()
@@ -62,10 +77,10 @@ function Grid:sortTiles()
 	
 	-- store sorted y keys by which row index they belong to.
 	for _, x in ipairs(self.xKeys) do
-		local column = self.grid[x]
+		local row = self.grid[x]
 		local yyKeys = {}
 
-		for y in pairs(column) do
+		for y in pairs(row) do
 			table.insert(yyKeys, y)
 		end
 
@@ -121,10 +136,10 @@ end
 
 function Grid:draw()
 	for _, x in ipairs(self.xKeys) do
-		local column = self.grid[x]
+		local row = self.grid[x]
 
 		for _, y in ipairs(self.yKeys[x]) do
-			local tile = column[y]
+			local tile = row[y]
 
 			if not (self.highlighted and self.highlighted.pos.x == x and self.highlighted.pos.y == y) then
 				tile.tile:draw()

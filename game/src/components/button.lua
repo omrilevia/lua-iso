@@ -18,7 +18,7 @@ function Button:draw()
 end
 
 function Button:press()
-	print("Button. " .. self.id .. " onAction.")
+	print("Button:press. " .. self.id)
 	return self.action()
 end
 
