@@ -10,5 +10,6 @@ function Constants:new()
 	self.X_OFFSET = love.graphics.getWidth() / 2
 	self.Y_OFFSET = 50
 	self.HINTS = true
+	self.SCROLL_SCALE_FACTOR = 2^(1/6)
 end
 

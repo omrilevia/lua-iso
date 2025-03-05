@@ -80,6 +80,10 @@ function Mouse:mousereleased(x, y, button)
 
 end
 
+function Mouse:wheelmoved(dx, dy)
+	
+end
+
 
 
 

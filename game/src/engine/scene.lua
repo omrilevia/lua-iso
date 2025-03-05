@@ -1,8 +1,12 @@
 Scene = Object:extend()
 
 function Scene:new(components)
+	local constants = Constants()
 	self.components = components
 	self.queue = {}
+	--	sets up window variables
+	self.window = {translate={x=0, y=0}, zoom=1}
+	self.dscale = constants.SCROLL_SCALE_FACTOR -- six times wheel movement changes the zoom twice; exponential zoom only
 end
 
 function Scene:load(bus)
@@ -35,7 +39,6 @@ end
 
 function Scene:update(dt)
 	for i, val in ipairs(self.components) do
-		-- circular, but easy way for components to call back into the scene for basic events.
 		val:update(dt)
 	end
 
@@ -112,6 +115,22 @@ function Scene:mousereleased(x, y, button)
 end
 
 function Scene:wheelmoved(x, y)
+	local mx = love.mouse.getX()
+	local my = love.mouse.getY()
+    if not (y == 0) then -- mouse wheel moved up or down
+--		zoom in to point or zoom out of point
+		local mouse_x = mx - self.window.translate.x
+		local mouse_y = my - self.window.translate.y
+		local k = self.dscale^y
+		self.window.zoom = self.window.zoom * k
+		self.window.translate.x = math.floor(self.window.translate.x + mouse_x * (1 - k))
+		self.window.translate.y = math.floor(self.window.translate.y + mouse_y * (1 - k))
+
+		-- self:event({name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.zoom})
+	else
+--		print ('wheel x: ' .. x .. ' y: ' .. y)
+    end
+	
 	for i, val in ipairs(self.components) do
 		val:wheelmoved(x, y)
 	end

@@ -54,8 +54,8 @@ function Component:mousereleased(x, y, button)
 
 end
 
-function Component:wheelmoved(x, y)
- 
+function Component:wheelmoved(dx, dy)
+	
 end
 
 function Component:getGameCoord()

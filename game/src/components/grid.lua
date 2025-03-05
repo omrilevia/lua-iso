@@ -8,6 +8,7 @@ function Grid:new(id)
 	self.xKeys = {}
 	self.yKeys = {}
 	self.id = id
+	self.window = {translate = Vec2(0, 0), scale = 1.0}
 	Grid.super.new(self, id, Vec2(0, 0))
 end
 
@@ -20,8 +21,6 @@ function Grid:load(scene, tiles)
 	local numberGen = love.math.newRandomGenerator()
 
 	if tiles then
-		print(lume.serialize(tiles))
-		
 		for _, tile in ipairs(tiles) do
 			local tileVal = Tile(tile.id, Vec2(tile.x, tile.y))
 			tileVal:load()
@@ -60,7 +59,6 @@ function Grid:save()
 		end
 	end
 
-	print(lume.serialize(map))
 	return map
 end
 
@@ -93,8 +91,7 @@ end
 function Grid:update(dt)
 	-- Highlight a moused over tile.
 	local util = Util()
-	local gameCoord = util:getGameCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()))
-	local gridCoord = Vec2(math.floor(gameCoord.x), math.floor(gameCoord.y))
+	local gridCoord = util:getGridCoordAt(Vec2(love.mouse.getX(), love.mouse.getY()), self.window)
 	if self.grid[gridCoord.x] and self.grid[gridCoord.x][gridCoord.y] then
 		self.highlighted = { pos = Vec2(gridCoord.x, gridCoord.y) }
 	else 
@@ -121,6 +118,9 @@ function Grid:update(dt)
 			if self.grid[event.obj.x] then
 				self.grid[event.obj.x][event.obj.y] = nil
 			end
+		elseif event.type == "TranslateAndScale" then
+			self.window.translate = event.obj.translate
+			self.window.scale = event.obj.scale
 		end
 	end
 
@@ -135,6 +135,11 @@ function Grid:update(dt)
 end
 
 function Grid:draw()
+	love.graphics.push()
+
+	love.graphics.translate(self.window.translate.x, self.window.translate.y)
+	love.graphics.scale(self.window.scale)
+
 	for _, x in ipairs(self.xKeys) do
 		local row = self.grid[x]
 
@@ -147,6 +152,7 @@ function Grid:draw()
 		end
 	end
 
+	love.graphics.pop()
 end
 
 function Grid:handleEvent(event)
@@ -154,6 +160,9 @@ function Grid:handleEvent(event)
 		self:addTile(event.sprite)
 	elseif event.name == "RemoveTile" then
 		self:removeTile(event)
+	elseif event.name == "TranslateAndScale" then
+		print("Grid:TranslateAndScale. " .. event.translate.x .. " " .. event.translate.y .. " ".. event.scale)
+		table.insert(self.queue, { type = event.name, obj = event} )
 	end
 end
 
@@ -171,6 +180,16 @@ function Grid:removeTile(event)
 	print("Grid:removeTile. " .. event.pos.x .. " " .. event.pos.y)
 
 	table.insert(self.queue, { type = "remove", obj = event.pos })
+end
+
+function Grid:highlightTile()
+	local util = Util()
+	local gridCoord = util:getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.window)
+	if self.grid[gridCoord.x] and self.grid[gridCoord.x][gridCoord.y] then
+		self.highlighted = { pos = Vec2(gridCoord.x, gridCoord.y) }
+	else 
+		self.highlighted = nil
+	end
 end
 
 
