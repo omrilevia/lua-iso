@@ -126,7 +126,7 @@ function Scene:wheelmoved(x, y)
 		self.window.translate.x = math.floor(self.window.translate.x + mouse_x * (1 - k))
 		self.window.translate.y = math.floor(self.window.translate.y + mouse_y * (1 - k))
 
-		-- self:event({name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.zoom})
+		self:event({name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.zoom})
 	else
 --		print ('wheel x: ' .. x .. ' y: ' .. y)
     end

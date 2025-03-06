@@ -20,7 +20,7 @@ end
 function Tile:update(dt)
 end
 
-function Tile:draw(scale)
+function Tile:draw()
 	local constants = Constants()
 	-- transform the tile's position to an isometric screen coord
 	local zOffset = constants.MAX_TILE_HEIGHT - self.image:getHeight()

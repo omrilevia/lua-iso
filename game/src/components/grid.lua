@@ -169,8 +169,7 @@ end
 function Grid:addTile(sprite)
 	-- sprite: id, pos, image, pos in isometric screen coordinates
 	local util = Util()
-	local gameCoord = util:getGameCoordAt(sprite.pos)
-	local gridCoord = Vec2(math.floor(gameCoord.x), math.floor(gameCoord.y))
+	local gridCoord = util:getGridCoordAt(sprite.pos, self.window)
 	print("Grid:addTile. " .. gridCoord.x .. " " .. gridCoord.y .. " tile: " .. sprite.id)
 	
 	table.insert(self.queue, { type = "add", obj = Tile(sprite.id, Vec2(gridCoord.x, gridCoord.y)) } )

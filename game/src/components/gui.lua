@@ -12,6 +12,7 @@ local textValue = "text"
 function Gui:new(id, pos)
 	Gui.super:new(id, pos)
 	self.drag = {isDrag = false, dragMode = "add", Vec2(0, 0)}
+	self.window = {translate = Vec2(0, 0), scale = 1.0}
 end
 
 function Gui:load(bus)
@@ -35,12 +36,18 @@ function Gui:update(dt)
 	imgui.NewFrame()
 end
 
+function Gui:handleEvent(event)
+	if event.name == "TranslateAndScale" then
+		self.window.translate = event.translate 
+		self.window.scale = event.scale
+	end
+end
+
 function Gui:draw()
     imgui.Begin("Editor")
 
 	local util = Util()
-	local gameCoord = util:getGameCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()))
-	local gridCoord = Vec2(math.floor(gameCoord.x), math.floor(gameCoord.y))
+	local gridCoord = util:getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.window)
 	local constants = Constants() 
 
 	if constants.HINTS then
@@ -106,15 +113,14 @@ end
 function Gui:mousemoved(x, y)
 	local util = Util()
 	local pos = Vec2(x, y)
-	local gridCoord = util:getGameCoordAt(pos)
-	local gameCoord = Vec2(math.floor(gridCoord.x), math.floor(gridCoord.y))
+	local gridCoord = util:getGridCoordAt(pos, self.window)
 
 	if self.drag.isDrag then
-		if not (self.drag.pos.x == gameCoord.x and self.drag.pos.y == gameCoord.y) then
+		if not (self.drag.pos.x == gridCoord.x and self.drag.pos.y == gridCoord.y) then
 			if self.drag.dragMode == "add" then
-				Gui.super.bus:event(DragAddTile(gameCoord))
+				Gui.super.bus:event(DragAddTile(gridCoord))
 			elseif self.drag.dragMode == "remove" then
-				Gui.super.bus:event(RemoveTile(gameCoord))
+				Gui.super.bus:event(RemoveTile(gridCoord))
 			end
 		end
 	end
@@ -127,14 +133,13 @@ end
 function Gui:mousepressed(x, y, button)
 	local util = Util()
 	local pos = Vec2(x, y)
-	local gridCoord = util:getGameCoordAt(pos)
-	local gameCoord = Vec2(math.floor(gridCoord.x), math.floor(gridCoord.y))
+	local gridCoord = util:getGridCoordAt(pos, self.window)
 
 	if button == 1 then
-		self.drag = {isDrag = true, dragMode = "add", pos = gameCoord}
+		self.drag = {isDrag = true, dragMode = "add", pos = gridCoord}
 	elseif button == 2 then
-		self.drag = {isDrag = true, dragMode = "remove", pos = gameCoord}
-		Gui.super.bus:event(RemoveTile(gameCoord))
+		self.drag = {isDrag = true, dragMode = "remove", pos = gridCoord}
+		Gui.super.bus:event(RemoveTile(gridCoord))
 	end
 
 	imgui.MousePressed(button)
