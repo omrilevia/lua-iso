@@ -7,6 +7,8 @@ function Scene:new(components)
 	--	sets up window variables
 	self.window = {translate={x=0, y=0}, zoom=1}
 	self.dscale = constants.SCROLL_SCALE_FACTOR 
+	self.drawables = {}
+	self.highlighted = {}
 end
 
 function Scene:load(bus)
@@ -23,6 +25,9 @@ function Scene:load(bus)
 		local componentData = data[val.id]
 		val:load(bus, componentData)
 	end
+
+	self.drawables = self:collectDrawables()
+	self:sortDrawables()
 end
 
 function Scene:save()
@@ -51,9 +56,51 @@ function Scene:update(dt)
 	end
 
 	self.queue = {}
+
+	self.drawables = self:collectDrawables()
+	self:sortDrawables()
 end
 
+function Scene:sortDrawables()
+	table.sort(self.drawables, function(a, b) 
+		return a.drawable.pos.y < b.drawable.pos.y or 
+			(a.drawable.pos.y == b.drawable.pos.y and a.drawable.pos.x < b.drawable.pos.x)
+	end)
+end
+
+-- Gets each of the components' drawables, and an optional highlighted component position
+function Scene:collectDrawables()
+    local drawables = {}
+    local index = 1
+
+    for _, component in ipairs(self.components) do
+        local componentDrawables, highlighted = component:getDrawables()
+		self.highlighted[component.id] = highlighted
+
+        local count = #componentDrawables
+
+        table.move(componentDrawables, 1, count, index, drawables)
+        index = index + count
+    end
+
+    return drawables
+end
+
+
 function Scene:draw()
+	love.graphics.push()
+	love.graphics.translate(self.window.translate.x, self.window.translate.y)
+	love.graphics.scale(self.window.zoom)
+
+	for _, d in ipairs(self.drawables) do
+		if not (self.highlighted[d.component] and self.highlighted[d.component].pos.x == d.drawable.pos.x and 
+			self.highlighted[d.component].pos.y == d.drawable.pos.y) then
+				d.drawable:draw()
+		end
+	end
+
+	love.graphics.pop()
+
 	for i, val in ipairs(self.components) do
 		val:draw()
 	end

@@ -27,7 +27,7 @@ function Grid:load(scene, tiles)
 			tileVal:load()
 
 			self.gridMap[Vec2(tile.x, tile.y):key()] = tileVal
-			table.insert(self.gridList, tileVal)
+			table.insert(self.gridList, {drawable = tileVal, component = "grid"})
 		end
 	else
 		for i = 0, constants.GRID_SIZE do
@@ -39,34 +39,21 @@ function Grid:load(scene, tiles)
 				tile:load()
 
 				self.gridMap[Vec2(tile.x, tile.y):key()] = tile
-				table.insert(self.gridList, tile)
+				table.insert(self.gridList, {drawable = tile, component = "grid"})
 			end
 		end
     end
 	
-	self:sortTiles()
 end
 
 function Grid:save() 
 	local map = {}
 
 	for i, tileVal in ipairs(self.gridList) do
-		table.insert(map, {x = tileVal.pos.x, y = tileVal.pos.y, id = tileVal.id})
+		table.insert(map, {x = tileVal.drawable.pos.x, y = tileVal.drawable.pos.y, id = tileVal.drawable.id})
 	end
 
 	return map
-end
-
-function Grid:sortTiles()
-
-	table.sort(self.gridList, function(a, b)
-        -- Primary sorting by Y position
-        if a.pos.y ~= b.pos.y then
-            return a.pos.y < b.pos.y 
-        end
-        -- Secondary sorting by X position (in case of same Y)
-        return a.pos.x < b.pos.x  -- Lower X is drawn first
-    end)
 end
 
 function Grid:update(dt)
@@ -81,7 +68,7 @@ function Grid:update(dt)
 			if self.gridMap[tile.pos:key()] then
 				self.gridMap[tile.pos:key()] = nil
 				for j, v in ipairs(self.gridList) do	
-					if v.pos:key() == tile.pos:key() then
+					if v.drawable.pos:key() == tile.pos:key() then
 						table.remove(self.gridList, j)
 					end
 				end
@@ -93,13 +80,13 @@ function Grid:update(dt)
 			end
 
 			self.gridMap[tile.pos:key()] = tile
-			table.insert(self.gridList, tile)
+			table.insert(self.gridList, {drawable = tile, component = "grid"})
 		elseif event.type == "remove" then
 		
 			if self.gridMap[event.obj:key()] then
 				self.gridMap[event.obj:key()] = nil
 				for j, v in ipairs(self.gridList) do	
-					if v.pos:key() == event.obj:key() then
+					if v.drawable.pos:key() == event.obj:key() then
 						table.remove(self.gridList, j)
 					end
 				end
@@ -110,29 +97,16 @@ function Grid:update(dt)
 		end
 	end
 
-	-- Only need to sort the grid if a tile was added.
-	-- Sort the keys (indices) of the grid. 
-	-- Collect the keys (indices, positive and negative) from the the grid
-	if #self.queue > 0 then
-		self:sortTiles()
-	end
-
 	self.queue = {}
 end
 
+-- The scene will retrieve the grid's drawables via getDrawables for global draw order.
 function Grid:draw()
-	love.graphics.push()
+	
+end
 
-	love.graphics.translate(self.window.translate.x, self.window.translate.y)
-	love.graphics.scale(self.window.scale)
-
-	for _, val in ipairs(self.gridList) do
-		if not (self.highlighted and self.highlighted.pos:key() == val.pos:key()) then
-			val:draw()
-		end
-	end
-
-	love.graphics.pop()
+function Grid:getDrawables()
+	return self.gridList, self.highlighted
 end
 
 function Grid:handleEvent(event)

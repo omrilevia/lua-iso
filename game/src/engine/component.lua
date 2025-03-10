@@ -27,6 +27,13 @@ function Component:shutdown()
 
 end
 
+-- Function to return component drawables which are drawn within the current scene.
+-- These drawables are ones which require scene translation and scaling applied. 
+-- For components which do not desire to follow translation and scaling within the scene, they should use the draw function.
+function Component:getDrawables()
+	return {}
+end
+
 --
 -- User inputs
 --
@@ -55,18 +62,10 @@ function Component:mousereleased(x, y, button)
 end
 
 function Component:wheelmoved(dx, dy)
-	
+
 end
 
-function Component:getGameCoord()
-	local constants = Constants()
-	-- pos is isometric game cord.
-	-- perform inverse transform on pos, and reverse x and y offsets. 
-	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
-	local transformed = iso:inverse():transform(Vec2(self.pos.x - constants.X_OFFSET, self.pos.y - constants.Y_OFFSET - 
-		constants.MAX_TILE_HEIGHT + constants.TILE_HEIGHT))
-	return Vec2(transformed.x, transformed.y)
-end
+
 
 
 
