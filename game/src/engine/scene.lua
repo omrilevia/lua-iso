@@ -6,7 +6,7 @@ function Scene:new(components)
 	self.queue = {}
 	--	sets up window variables
 	self.window = {translate={x=0, y=0}, zoom=1}
-	self.dscale = constants.SCROLL_SCALE_FACTOR -- six times wheel movement changes the zoom twice; exponential zoom only
+	self.dscale = constants.SCROLL_SCALE_FACTOR 
 end
 
 function Scene:load(bus)

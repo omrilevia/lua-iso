@@ -3,10 +3,11 @@ lume = require "lib.lume"
 Grid = Component:extend()
 
 function Grid:new(id)
-	self.grid = {}
+	-- Map for O(1) lookup
+	self.gridMap = {}
+	-- sorted tile list by position
+	self.gridList = {}
 	self.queue = {}
-	self.xKeys = {}
-	self.yKeys = {}
 	self.id = id
 	self.window = {translate = Vec2(0, 0), scale = 1.0}
 	Grid.super.new(self, id, Vec2(0, 0))
@@ -25,23 +26,21 @@ function Grid:load(scene, tiles)
 			local tileVal = Tile(tile.id, Vec2(tile.x, tile.y))
 			tileVal:load()
 
-			if not self.grid[tile.x] then
-				self.grid[tile.x] = {}
-			end
-
-			self.grid[tile.x][tile.y] = {pos = Vec2(tile.x, tile.y), tile = tileVal}
+			self.gridMap[Vec2(tile.x, tile.y):key()] = tileVal
+			table.insert(self.gridList, tileVal)
 		end
 	else
 		for i = 0, constants.GRID_SIZE do
-			local row = {}
 
 			for j = 0, constants.GRID_SIZE do
 				local id = numberGen:random(1, constants.NUM_TILE_TYPES)
-				local tile = Tile(id, Vec2(i, j))
+				if id == 6 then id = 7 end
+				local tile = Tile(constants.TILE_ASSET_PATH .. "tile-" .. id .. ".png", Vec2(i, j))
 				tile:load()
-				table.insert(row, j, {pos = Vec2(i, j), tile = tile})
+
+				self.gridMap[Vec2(tile.x, tile.y):key()] = tile
+				table.insert(self.gridList, tile)
 			end
-			table.insert(self.grid, i, row)
 		end
     end
 	
@@ -51,61 +50,41 @@ end
 function Grid:save() 
 	local map = {}
 
-	for _, x in ipairs(self.xKeys) do
-		for _, y in ipairs(self.yKeys[x]) do
-			local tile = self.grid[x][y]
-
-			table.insert(map, {x = tile.pos.x, y = tile.pos.y, id = tile.tile.id})
-		end
+	for i, tileVal in ipairs(self.gridList) do
+		table.insert(map, {x = tileVal.pos.x, y = tileVal.pos.y, id = tileVal.id})
 	end
 
 	return map
 end
 
 function Grid:sortTiles()
-	self.xKeys = {}
-	self.yKeys = {}
 
-	for k in pairs(self.grid) do
-		table.insert(self.xKeys, k)
-	end
-	
-	-- sort x keys.
-	table.sort(self.xKeys, function(a, b) return a < b end)
-	
-	-- store sorted y keys by which row index they belong to.
-	for _, x in ipairs(self.xKeys) do
-		local row = self.grid[x]
-		local yyKeys = {}
-
-		for y in pairs(row) do
-			table.insert(yyKeys, y)
-		end
-
-		table.sort(yyKeys, function(a, b) return a < b end)
-
-		self.yKeys[x] = yyKeys
-	end
+	table.sort(self.gridList, function(a, b)
+        -- Primary sorting by Y position
+        if a.pos.y ~= b.pos.y then
+            return a.pos.y < b.pos.y 
+        end
+        -- Secondary sorting by X position (in case of same Y)
+        return a.pos.x < b.pos.x  -- Lower X is drawn first
+    end)
 end
 
 function Grid:update(dt)
 	-- Highlight a moused over tile.
-	local util = Util()
-	local gridCoord = util:getGridCoordAt(Vec2(love.mouse.getX(), love.mouse.getY()), self.window)
-	if self.grid[gridCoord.x] and self.grid[gridCoord.x][gridCoord.y] then
-		self.highlighted = { pos = Vec2(gridCoord.x, gridCoord.y) }
-	else 
-		self.highlighted = nil
-	end
-	
+	self:highlightTile()
+
 	-- Check for a tile add or remove. 
 	for i, event in ipairs(self.queue) do 
 		if event.type == "add" then
 			local tile = event.obj
-			if not self.grid[tile.pos.x] then
-				self.grid[tile.pos.x] = {}
-			elseif self.grid[tile.pos.x][tile.pos.y] then
-				self.grid[gridCoord.x][gridCoord.y] = nil
+
+			if self.gridMap[tile.pos:key()] then
+				self.gridMap[tile.pos:key()] = nil
+				for j, v in ipairs(self.gridList) do	
+					if v.pos:key() == tile.pos:key() then
+						table.remove(self.gridList, j)
+					end
+				end
 			end
 			
 			-- Ensure tile is loaded.
@@ -113,10 +92,17 @@ function Grid:update(dt)
 				tile:load()
 			end
 
-			self.grid[tile.pos.x][tile.pos.y] = {pos = Vec2(tile.pos.x, tile.pos.y), tile = tile}
+			self.gridMap[tile.pos:key()] = tile
+			table.insert(self.gridList, tile)
 		elseif event.type == "remove" then
-			if self.grid[event.obj.x] then
-				self.grid[event.obj.x][event.obj.y] = nil
+		
+			if self.gridMap[event.obj:key()] then
+				self.gridMap[event.obj:key()] = nil
+				for j, v in ipairs(self.gridList) do	
+					if v.pos:key() == event.obj:key() then
+						table.remove(self.gridList, j)
+					end
+				end
 			end
 		elseif event.type == "TranslateAndScale" then
 			self.window.translate = event.obj.translate
@@ -140,15 +126,9 @@ function Grid:draw()
 	love.graphics.translate(self.window.translate.x, self.window.translate.y)
 	love.graphics.scale(self.window.scale)
 
-	for _, x in ipairs(self.xKeys) do
-		local row = self.grid[x]
-
-		for _, y in ipairs(self.yKeys[x]) do
-			local tile = row[y]
-
-			if not (self.highlighted and self.highlighted.pos.x == x and self.highlighted.pos.y == y) then
-				tile.tile:draw()
-			end 
+	for _, val in ipairs(self.gridList) do
+		if not (self.highlighted and self.highlighted.pos:key() == val.pos:key()) then
+			val:draw()
 		end
 	end
 
@@ -167,7 +147,6 @@ function Grid:handleEvent(event)
 end
 
 function Grid:addTile(sprite)
-	-- sprite: id, pos, image, pos in isometric screen coordinates
 	local util = Util()
 	local gridCoord = util:getGridCoordAt(sprite.pos, self.window)
 	print("Grid:addTile. " .. gridCoord.x .. " " .. gridCoord.y .. " tile: " .. sprite.id)
@@ -184,7 +163,8 @@ end
 function Grid:highlightTile()
 	local util = Util()
 	local gridCoord = util:getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.window)
-	if self.grid[gridCoord.x] and self.grid[gridCoord.x][gridCoord.y] then
+
+	if self.gridMap[gridCoord:key()] then
 		self.highlighted = { pos = Vec2(gridCoord.x, gridCoord.y) }
 	else 
 		self.highlighted = nil

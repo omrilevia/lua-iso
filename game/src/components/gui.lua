@@ -25,7 +25,8 @@ function Gui:load(bus)
 		if i == 6 then
 			-- tile is broken
 		else 
-			table.insert(self.sprites, {id = i, img = love.graphics.newImage(constants.TILE_ASSET_PATH .. "tile-" .. i .. ".png") })
+			table.insert(self.sprites, {id = constants.TILE_ASSET_PATH .. "tile-" .. i .. ".png", 
+			img = love.graphics.newImage(constants.TILE_ASSET_PATH .. "tile-" .. i .. ".png") })
 		end
 	end
 

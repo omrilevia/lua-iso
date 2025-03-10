@@ -1,20 +1,13 @@
-require "src.engine.component"
-require "src.math2.iso"
 Tile = Component:extend()
 
 function Tile:new(texId, pos)
-	--texId 7 is broken
-	if texId == 6 then
-		texId = texId + 1
-	end
 	self.id = texId
-	local constants = Constants()
-	self.tilePath = constants.TILE_ASSET_PATH .. "tile-" .. texId .. ".png"
 	self.pos = pos
+	Tile.super:new(texId, pos)
 end
 
 function Tile:load()
-	self.image = love.graphics.newImage(self.tilePath)
+	self.image = love.graphics.newImage(self.id)
 end
 
 function Tile:update(dt)

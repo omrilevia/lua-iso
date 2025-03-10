@@ -15,6 +15,11 @@ function Vec2:scale(scalar)
 	return self
 end
 
+function Vec2:key()
+	return self.x .. "," .. self.y
+end
+
+
 
 
 
