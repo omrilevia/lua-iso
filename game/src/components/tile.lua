@@ -13,7 +13,7 @@ end
 function Tile:update(dt)
 end
 
-function Tile:draw()
+function Tile:draw(highlight)
 	local constants = Constants()
 	-- transform the tile's position to an isometric screen coord
 	local zOffset = constants.MAX_TILE_HEIGHT - self.image:getHeight()
@@ -27,6 +27,9 @@ function Tile:draw()
 	love.graphics.draw(self.image, constants.X_OFFSET + vecIso.x - constants.TILE_WIDTH/2, constants.Y_OFFSET + vecIso.y + zOffset)
 end
 
+function Tile:highlight()
+	--self:draw(true)
+end
 
 
 

@@ -24,3 +24,15 @@ function Util:getGridCoordAt(pos, window)
 
 	return Vec2(math.floor(gameCoord.x), math.floor(gameCoord.y))
 end
+
+function Util:getUnitVectorPlayerToMouse(mousePos, objPos)
+	local angle = math.atan2(mousePos.y - objPos.y, mousePos.x - objPos.x)
+  
+  	return math.cos(angle), math.sin(angle)
+end
+
+function Util:getDistance(vec1, vec2) 
+	return math.sqrt((vec2.y - vec1.y)^2 + (vec2.x - vec1.x)^2)
+end
+
+

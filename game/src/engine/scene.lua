@@ -96,13 +96,17 @@ function Scene:draw()
 		if not (self.highlighted[d.component] and self.highlighted[d.component].pos.x == d.drawable.pos.x and 
 			self.highlighted[d.component].pos.y == d.drawable.pos.y) then
 				d.drawable:draw()
+		else
+			d.drawable:highlight()
 		end
 	end
-
+ 
 	love.graphics.pop()
 
 	for i, val in ipairs(self.components) do
-		val:draw()
+		if not val:isScalable() then
+			val:draw()
+		end
 	end
 end
 

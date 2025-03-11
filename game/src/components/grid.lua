@@ -145,5 +145,10 @@ function Grid:highlightTile()
 	end
 end
 
+function Grid:isScalable()
+	return true
+end
+
+
 
 

@@ -23,10 +23,12 @@ function love.load()
 	require "src.engine.events.removetile"
 	require "src.engine.events.dragaddtile"
 	require "src.components.button"
+	require "src.components.player"
 	bus = Bus()
 
 	button = Button("save button", Vec2(0, 300), function () return bus:event(Event("save")) end)
-	currentScene = Scene({ Grid("grid"), Gui("gui"), Mouse("mouse"), button })
+	player = Player("assets/player/player.png", Vec2(1, 1))
+	currentScene = Scene({ Grid("grid"), Gui("gui"), Mouse("mouse"), button, player })
 
 	currentScene:load(bus)
 end
