@@ -3,6 +3,7 @@ Tile = Component:extend()
 function Tile:new(texId, pos)
 	self.id = texId
 	self.pos = pos
+	self.index = -1
 	Tile.super:new(texId, pos)
 end
 

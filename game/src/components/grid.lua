@@ -38,7 +38,7 @@ function Grid:load(scene, tiles)
 				local tile = Tile(constants.TILE_ASSET_PATH .. "tile-" .. id .. ".png", Vec2(i, j))
 				tile:load()
 
-				self.gridMap[Vec2(tile.x, tile.y):key()] = tile
+				self.gridMap[Vec2(tile.pos.x, tile.pos.y):key()] = tile
 				table.insert(self.gridList, {drawable = tile, component = "grid"})
 			end
 		end

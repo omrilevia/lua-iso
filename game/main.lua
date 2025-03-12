@@ -28,7 +28,8 @@ function love.load()
 
 	button = Button("save button", Vec2(0, 300), function () return bus:event(Event("save")) end)
 	player = Player("assets/player/player.png", Vec2(1, 1))
-	currentScene = Scene({ Grid("grid"), Gui("gui"), Mouse("mouse"), button, player })
+	gui = Gui("gui", Vec2(0, 0))
+	currentScene = Scene({ Grid("grid"), Mouse("mouse"), button, player })
 
 	currentScene:load(bus)
 end
@@ -53,10 +54,17 @@ function love.textinput(t)
 end
 
 function love.keypressed(key)
+	currentScene:keypressed(key)
+
 	if key == "s" then
 		button:press()
+	elseif key == "g" then
+		if currentScene:getComponent("gui") then
+			currentScene:removeComponent("gui")
+		else
+			currentScene:addComponent(gui)
+		end
 	end
-    currentScene:keypressed(key)
 end
 
 function love.keyreleased(key)

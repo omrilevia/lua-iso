@@ -4,10 +4,11 @@ function Player:new(id, pos)
 	self.id = id
 	-- grid coordinate, (1,1) for example
 	self.pos = pos
+	self.drawPos = pos
 	-- tiles per second
-	self.speed = 5
+	self.speed = 10
 	self.moveQueue = {}
-
+	self.index = 0
 	Player.super:new(id, pos)
 end
 
@@ -32,7 +33,7 @@ end
 function Player:draw()
 	local constants = Constants()
 	-- transform the tile's position to an isometric screen coord
-	local zOffset = constants.TILE_HEIGHT + self.image:getHeight()/2
+	local zOffset = constants.TILE_HEIGHT + self.image:getHeight()
 
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	local vecIso = iso:transform(self.pos)
@@ -46,6 +47,8 @@ end
 
 function Player:handleEvent(event)
 	Player.super:handleEvent(event)
+
+
 end
 
 -- 1 = LMB
@@ -65,14 +68,15 @@ function Player:isScalable()
 end
 
 function Player:move(direction, target, dt, eventIndex)
-	print(self.pos.x .. " " .. self.pos.y)
-	if Util:getDistance(target, self.pos) < 0.1 then
+	--self.pos.x = self.speed * dt * direction.x + self.pos.x
+	--self.pos.y = self.speed * dt * direction.y + self.pos.y
+	self.pos.x = math.floor(target.x)
+	self.pos.y = math.floor(target.y)
+
+	if Util:getDistance(Vec2(math.floor(target.x), math.floor(target.y)), self.pos) < 0.1 then
 		table.remove(self.moveQueue, eventIndex)
 		return
 	end
-
-	self.pos.x = self.speed * dt * direction.x + self.pos.x
-	self.pos.y = self.speed * dt * direction.y + self.pos.y
 end
 
 

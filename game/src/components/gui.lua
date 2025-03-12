@@ -11,13 +11,15 @@ local textValue = "text"
 
 function Gui:new(id, pos)
 	Gui.super:new(id, pos)
+	self.id = id
+	self.loaded = false
 	self.drag = {isDrag = false, dragMode = "add", Vec2(0, 0)}
 	self.window = {translate = Vec2(0, 0), scale = 1.0}
 end
 
 function Gui:load(bus)
 	Gui.super:load(bus)
-
+	self.loaded = true
 	local constants = Constants()
 	self.sprites = {} 
 
@@ -29,8 +31,6 @@ function Gui:load(bus)
 			img = love.graphics.newImage(constants.TILE_ASSET_PATH .. "tile-" .. i .. ".png") })
 		end
 	end
-
-	
 end
 
 function Gui:update(dt)

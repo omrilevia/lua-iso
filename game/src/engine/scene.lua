@@ -3,15 +3,23 @@ Scene = Object:extend()
 function Scene:new(components)
 	local constants = Constants()
 	self.components = components
+	self.componentMap = {}
+
+	for i, c in ipairs(self.components) do
+		self.componentMap[c.id] = c
+	end
+
 	self.queue = {}
 	--	sets up window variables
-	self.window = {translate={x=0, y=0}, zoom=1}
+	self.window = {translate={x=0, y=0}, scale=1}
 	self.dscale = constants.SCROLL_SCALE_FACTOR 
 	self.drawables = {}
 	self.highlighted = {}
 end
 
 function Scene:load(bus)
+	self.bus = bus
+	
 	-- set self as the listener/broadcaster for events. give bus to components to publish events.
 	bus:setBroadcaster(self)
 	local data = {}
@@ -43,16 +51,16 @@ function Scene:save()
 end
 
 function Scene:update(dt)
-	for i, val in ipairs(self.components) do
-		val:update(dt)
-	end
-
 	if #self.queue > 0 then
 		for i, ev in ipairs(self.queue) do
 			if ev.name == "save" then
 				self:save()
 			end
 		end
+	end
+
+	for i, val in ipairs(self.components) do
+		val:update(dt)
 	end
 
 	self.queue = {}
@@ -64,6 +72,7 @@ end
 function Scene:sortDrawables()
 	table.sort(self.drawables, function(a, b) 
 		return a.drawable.pos.y < b.drawable.pos.y or 
+			(a.drawable.pos.y == b.drawable.pos.y and a.drawable.pos.x == b.drawable.pos.x and a.drawable.index < b.drawable.index) or
 			(a.drawable.pos.y == b.drawable.pos.y and a.drawable.pos.x < b.drawable.pos.x)
 	end)
 end
@@ -90,7 +99,7 @@ end
 function Scene:draw()
 	love.graphics.push()
 	love.graphics.translate(self.window.translate.x, self.window.translate.y)
-	love.graphics.scale(self.window.zoom)
+	love.graphics.scale(self.window.scale)
 
 	for _, d in ipairs(self.drawables) do
 		if not (self.highlighted[d.component] and self.highlighted[d.component].pos.x == d.drawable.pos.x and 
@@ -173,11 +182,11 @@ function Scene:wheelmoved(x, y)
 		local mouse_x = mx - self.window.translate.x
 		local mouse_y = my - self.window.translate.y
 		local k = self.dscale^y
-		self.window.zoom = self.window.zoom * k
+		self.window.scale = self.window.scale * k
 		self.window.translate.x = math.floor(self.window.translate.x + mouse_x * (1 - k))
 		self.window.translate.y = math.floor(self.window.translate.y + mouse_y * (1 - k))
 
-		self:event({name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.zoom})
+		self:event({name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.scale})
 	else
 --		print ('wheel x: ' .. x .. ' y: ' .. y)
     end
@@ -188,25 +197,27 @@ function Scene:wheelmoved(x, y)
 end
 
 function Scene:addComponent(component)
-	table.insert(self.components, {id = component.id, obj = component})
+	if not component.loaded then 
+		component:load(self.bus)
+	end
+
+	table.insert(self.components, component)
+	self.componentMap[component.id] = component
 end
 
-function Scene:removeComponent(component)
-	for i = #self.components, 1, -1 do
-		if self.components[i].id == component.id then
-			table.remove(self.components, i)
+function Scene:removeComponent(id)
+	if self.componentMap[id] then
+		for j, c in ipairs(self.components) do
+			if c.id == id then
+				self.componentMap[id] = nil
+				table.remove(self.components, j)
+			end
 		end
 	end
 end
 
 function Scene:getComponent(id)
-	for i = #self.components, 1, -1 do
-		if self.components[i].id == id then
-			return self.components[i]
-		end
-	end
-
-	return nil
+	return self.componentMap[id]
 end
 
 
