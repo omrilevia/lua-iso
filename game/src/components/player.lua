@@ -4,11 +4,11 @@ function Player:new(id, pos)
 	self.id = id
 	-- grid coordinate, (1,1) for example
 	self.pos = pos
-	self.drawPos = pos
 	-- tiles per second
-	self.speed = 10
+	self.speed = 3
 	self.moveQueue = {}
-	self.index = 0
+	self.index = 1
+	self.isPlayer = true
 	Player.super:new(id, pos)
 end
 
@@ -47,8 +47,6 @@ end
 
 function Player:handleEvent(event)
 	Player.super:handleEvent(event)
-
-
 end
 
 -- 1 = LMB
@@ -68,15 +66,16 @@ function Player:isScalable()
 end
 
 function Player:move(direction, target, dt, eventIndex)
-	--self.pos.x = self.speed * dt * direction.x + self.pos.x
-	--self.pos.y = self.speed * dt * direction.y + self.pos.y
-	self.pos.x = math.floor(target.x)
-	self.pos.y = math.floor(target.y)
+	self.pos.x = self.speed * dt * direction.x + self.pos.x
+	self.pos.y = self.speed * dt * direction.y + self.pos.y
 
-	if Util:getDistance(Vec2(math.floor(target.x), math.floor(target.y)), self.pos) < 0.1 then
+	local distance = Util:getDistance(Vec2(target.x, target.y), self.pos)
+
+	if distance < 0.1 then
 		table.remove(self.moveQueue, eventIndex)
 		return
 	end
+
 end
 
 

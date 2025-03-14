@@ -70,10 +70,20 @@ function Scene:update(dt)
 end
 
 function Scene:sortDrawables()
-	table.sort(self.drawables, function(a, b) 
-		return a.drawable.pos.y < b.drawable.pos.y or 
-			(a.drawable.pos.y == b.drawable.pos.y and a.drawable.pos.x == b.drawable.pos.x and a.drawable.index < b.drawable.index) or
-			(a.drawable.pos.y == b.drawable.pos.y and a.drawable.pos.x < b.drawable.pos.x)
+	table.sort(self.drawables, function(a, b)
+		if a.drawable.index ~= b.drawable.index then
+			return a.drawable.index < b.drawable.index
+		end
+
+		local aPos = Vec2(math.floor(a.drawable.pos.x), math.floor(a.drawable.pos.y))
+		local bPos = Vec2(math.floor(b.drawable.pos.x), math.floor(b.drawable.pos.y))
+
+		if a.isPlayer or b.isPlayer then
+			print("a: " .. aPos.x .. " " .. aPos.y .. "b: " .. bPos.x .. " " .. bPos.y)
+		end
+
+		return aPos.y < bPos.y or 
+			(aPos.y == bPos.y and aPos.x < bPos.x)
 	end)
 end
 

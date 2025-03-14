@@ -3,12 +3,17 @@ Tile = Component:extend()
 function Tile:new(texId, pos)
 	self.id = texId
 	self.pos = pos
-	self.index = -1
 	Tile.super:new(texId, pos)
 end
 
 function Tile:load()
 	self.image = love.graphics.newImage(self.id)
+
+	if self.id == "assets/tiles/tile-8.png" then
+		self.index = 1
+	else
+		self.index = 0
+	end
 end
 
 function Tile:update(dt)
