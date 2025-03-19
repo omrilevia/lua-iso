@@ -22,8 +22,8 @@ function love.conf(t)
 
 	t.window.title          = "Untitled"
 	t.window.icon           = nil
-	t.window.width          = 1000
-	t.window.height         = 700
+	t.window.width          = 1200
+	t.window.height         = 800
 	t.window.borderless     = false
 	t.window.resizable      = false
 	t.window.minwidth       = 1

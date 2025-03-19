@@ -5,6 +5,11 @@ function Vec2:new(x, y)
 	self.y = y
 end
 
+function Vec2:fromKey(key)
+	local x, y = key:match("(%d+),(%d+)")
+	return Vec2(tonumber(x), tonumber(y))
+end
+
 function Vec2:dot(vec)
 	return self.x * vec.x + self.y * vec.y
 end

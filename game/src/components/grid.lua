@@ -23,7 +23,7 @@ function Grid:load(scene, tiles)
 
 	if tiles then
 		for _, tile in ipairs(tiles) do
-			local tileVal = Tile(tile.id, Vec2(tile.x, tile.y))
+			local tileVal = Sprite(tile.id, Vec2(tile.x, tile.y))
 			tileVal:load()
 
 			self.gridMap[Vec2(tile.x, tile.y):key()] = tileVal
@@ -35,7 +35,7 @@ function Grid:load(scene, tiles)
 			for j = 0, constants.GRID_SIZE do
 				local id = numberGen:random(1, constants.NUM_TILE_TYPES)
 				if id == 6 then id = 7 end
-				local tile = Tile(constants.TILE_ASSET_PATH .. "tile-" .. id .. ".png", Vec2(i, j))
+				local tile = Sprite(constants.TILE_ASSET_PATH .. "tile-" .. id .. ".png", Vec2(i, j))
 				tile:load()
 
 				self.gridMap[Vec2(tile.pos.x, tile.pos.y):key()] = tile
@@ -125,7 +125,7 @@ function Grid:addTile(sprite)
 	local gridCoord = util:getGridCoordAt(sprite.pos, self.window)
 	print("Grid:addTile. " .. gridCoord.x .. " " .. gridCoord.y .. " tile: " .. sprite.id)
 	
-	table.insert(self.queue, { type = "add", obj = Tile(sprite.id, Vec2(gridCoord.x, gridCoord.y)) } )
+	table.insert(self.queue, { type = "add", obj = Sprite(sprite.id, Vec2(gridCoord.x, gridCoord.y)) } )
 end
 
 function Grid:removeTile(event)

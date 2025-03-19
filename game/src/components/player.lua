@@ -4,6 +4,7 @@ function Player:new(id, pos)
 	self.id = id
 	-- grid coordinate, (1,1) for example
 	self.pos = pos
+	self.sortPos = pos
 	-- tiles per second
 	self.speed = 3
 	self.moveQueue = {}
@@ -28,17 +29,20 @@ function Player:update(dt)
 			self:move(event.obj.direction, event.obj.target, dt, i)
 		end
 	end
+
+	self.sortPos = self.pos
 end
 
 function Player:draw()
 	local constants = Constants()
 	-- transform the tile's position to an isometric screen coord
 	local zOffset = constants.TILE_HEIGHT + self.image:getHeight()
-
+	local xOffset = constants.GRID_SIZE * constants.TILE_WIDTH / 2 - self.image:getWidth()/2
+	local yOffset = self.image:getHeight()/2
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	local vecIso = iso:transform(self.pos)
 
-	love.graphics.draw(self.image, constants.X_OFFSET + vecIso.x - self.image:getWidth()/2, constants.Y_OFFSET + vecIso.y + zOffset)
+	love.graphics.draw(self.image, vecIso.x + xOffset, vecIso.y)
 end
 
 function Player:getDrawables()
