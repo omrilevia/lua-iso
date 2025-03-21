@@ -30,19 +30,20 @@ function Player:update(dt)
 		end
 	end
 
-	self.sortPos = self.pos
+	self.sortPos = Vec2(math.floor(self.pos.x), math.floor(self.pos.y))
 end
 
 function Player:draw()
 	local constants = Constants()
 	-- transform the tile's position to an isometric screen coord
-	local zOffset = constants.TILE_HEIGHT + self.image:getHeight()
 	local xOffset = constants.GRID_SIZE * constants.TILE_WIDTH / 2 - self.image:getWidth()/2
-	local yOffset = self.image:getHeight()/2
+	local yOffset = constants.Y_OFFSET
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	local vecIso = iso:transform(self.pos)
 
-	love.graphics.draw(self.image, vecIso.x + xOffset, vecIso.y)
+	local vec = Util():getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY(), self.super.window))
+	love.graphics.print("Mouse: " .. vec.x .. " " .. vec.y)
+	love.graphics.draw(self.image, vecIso.x + xOffset, vecIso.y + constants.Y_OFFSET)
 end
 
 function Player:getDrawables()
@@ -59,6 +60,7 @@ function Player:mousepressed(x, y, button)
 	if (button == 1) then
 		self.moveQueue = {}
 		local gameCoordMouse = Util():getGameCoordAt(Vec2(x, y), self.super.window)
+		print("Player move: " .. gameCoordMouse.x .. " " .. gameCoordMouse.y)
 		local cos, sin = Util():getUnitVectorPlayerToMouse(gameCoordMouse, self.pos)
 		
 		table.insert(self.moveQueue, {type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse}})

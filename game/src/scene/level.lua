@@ -1,5 +1,5 @@
-Level = Scene:extend()
+Level = SystemMan:extend()
 
 function Level:new()
-	Level.super.new({ Grid(), Mouse() })
+	Level.super.new({ Scene(), Mouse() })
 end

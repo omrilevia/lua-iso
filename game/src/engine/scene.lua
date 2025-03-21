@@ -1,233 +1,203 @@
-Scene = Object:extend()
+lume = require "lib.lume"
 
-function Scene:new(components)
-	local constants = Constants()
-	self.components = components
-	self.componentMap = {}
+Scene = Component:extend()
 
-	for i, c in ipairs(self.components) do
-		self.componentMap[c.id] = c
-	end
-
+function Scene:new(mapid, playerRef)
+	self.player = playerRef
 	self.queue = {}
-	--	sets up window variables
-	self.window = {translate={x=0, y=0}, scale=1}
-	self.dscale = constants.SCROLL_SCALE_FACTOR 
-	self.drawables = {}
-	self.highlighted = {}
+	self.id = mapid
+	self.window = {translate = Vec2(0, 0), scale = 1.0}
+	Scene.super.new(self, mapid, Vec2(0, 0))
 end
 
-function Scene:load(bus)
-	self.bus = bus
+function Scene:load(bus, saveData)
+	Scene.super:load(bus)
+	local sti = require("lib.sti")
+
+	self.map = sti(self.id)
+	local gameObjects = self.map:addCustomLayer("gameObjects")
+
+	local objectLookup = {}
+
+	for _, layer in ipairs(self.map.layers) do
+    	if layer.type == "objectgroup" then
+        	objectLookup[layer.name] = layer.objects  
+    	end
+	end
 	
-	-- set self as the listener/broadcaster for events. give bus to components to publish events.
-	bus:setBroadcaster(self)
-	local data = {}
-	-- load saved data
-	if love.filesystem.getInfo("savedata") then
-		local file = love.filesystem.read("savedata")
-		data = lume.deserialize(file) or {}
+	-- Get player spawn object
+	local playerSpawn = objectLookup["player"][1]
+	local spawnX, spawnY = math.floor(playerSpawn.x/Constants().TILE_WIDTH), math.floor(playerSpawn.y/Constants().TILE_HEIGHT)
+	self.player.pos = Vec2(spawnX, spawnY)
+	self.player:load()
+
+	-- extract object layers from demo map: collisions, sprites
+	local collisions = objectLookup["collisions"]
+	local sprites = objectLookup["sprites"]
+
+	local drawables = {}
+
+	table.insert(drawables, self.player)
+	
+	for _, obj in ipairs(sprites) do
+		local gid = obj.gid
+		local quad = self.map.tiles[gid].quad
+		local tileset = self.map.tiles[gid].tileset
+		local tilesetImage = self.map.tilesets[tileset].image
+
+
+		local sortPos = Vec2:fromKey(obj.properties["sortPos"])
+		local pos = Vec2(obj.x / constants.TILE_HEIGHT, obj.y / constants.TILE_HEIGHT)
+
+		local sprite = Sprite(gid, pos, {image = tilesetImage, quad = quad})
+		sprite.sortPos = sortPos
+
+		table.insert(drawables, sprite)
 	end
 
-	for i, val in ipairs(self.components) do
-		local componentData = data[val.id]
-		val:load(bus, componentData)
+	-- Draw player and sprites
+	gameObjects.draw = function(self)
+		local gridCoord = Util():getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.window)
+
+		for _, drawable in ipairs(drawables) do
+			drawable:draw()
+		end
 	end
 
-	self.drawables = self:collectDrawables()
-	self:sortDrawables()
+	gameObjects.update = function(self, dt)
+		for _, drawable in ipairs(drawables) do
+			drawable:update(dt)
+		end
+
+		-- sort drawables 
+		table.sort(drawables, function(a, b) 
+			return a.sortPos.y < b.sortPos.y or (a.sortPos.y == b.sortPos.y and a.sortPos.x < b.sortPos.x)
+		end)
+	end
+	
+	self.map:removeLayer("player")
+	self.map:removeLayer("collisions")
+	self.map:removeLayer("sprites")
 end
 
-function Scene:save()
-	print("Scene:save.")
-	local data = {}
+function Scene:save() 
+	local map = {}
 
-	for i, val in ipairs(self.components) do 
-		data[val.id] = val:save()
+	for i, tileVal in ipairs(self.gridList) do
+		table.insert(map, {x = tileVal.drawable.pos.x, y = tileVal.drawable.pos.y, id = tileVal.drawable.id})
 	end
 
-	love.filesystem.write("savedata", lume.serialize(data))
-	assert(love.filesystem.getInfo("savedata"))
+	return map
 end
 
 function Scene:update(dt)
-	if #self.queue > 0 then
-		for i, ev in ipairs(self.queue) do
-			if ev.name == "save" then
-				self:save()
+	-- Highlight a moused over tile.
+	self:highlightTile()
+
+	-- Check for a tile add or remove. 
+	for i, event in ipairs(self.queue) do 
+		if event.type == "add" then
+			local tile = event.obj
+
+			if self.gridMap[tile.pos:key()] then
+				self.gridMap[tile.pos:key()] = nil
+				for j, v in ipairs(self.gridList) do	
+					if v.drawable.pos:key() == tile.pos:key() then
+						table.remove(self.gridList, j)
+					end
+				end
 			end
+			
+			-- Ensure tile is loaded.
+			if not tile.image then
+				tile:load()
+			end
+
+			self.gridMap[tile.pos:key()] = tile
+			table.insert(self.gridList, {drawable = tile, component = "grid"})
+		elseif event.type == "remove" then
+		
+			if self.gridMap[event.obj:key()] then
+				self.gridMap[event.obj:key()] = nil
+				for j, v in ipairs(self.gridList) do	
+					if v.drawable.pos:key() == event.obj:key() then
+						table.remove(self.gridList, j)
+					end
+				end
+			end
+		elseif event.type == "TranslateAndScale" then
+			self.window.translate = event.obj.translate
+			self.window.scale = event.obj.scale
 		end
 	end
 
-	for i, val in ipairs(self.components) do
-		val:update(dt)
-	end
+	self.map:update(dt)
 
 	self.queue = {}
-
-	self.drawables = self:collectDrawables()
-	self:sortDrawables()
 end
 
-function Scene:sortDrawables()
-	table.sort(self.drawables, function(a, b)
-		if a.drawable.index ~= b.drawable.index then
-			return a.drawable.index < b.drawable.index
-		end
-
-		local aPos = Vec2(math.floor(a.drawable.pos.x), math.floor(a.drawable.pos.y))
-		local bPos = Vec2(math.floor(b.drawable.pos.x), math.floor(b.drawable.pos.y))
-
-		if a.isPlayer or b.isPlayer then
-			print("a: " .. aPos.x .. " " .. aPos.y .. "b: " .. bPos.x .. " " .. bPos.y)
-		end
-
-		return aPos.y < bPos.y or 
-			(aPos.y == bPos.y and aPos.x < bPos.x)
-	end)
-end
-
--- Gets each of the components' drawables, and an optional highlighted component position
-function Scene:collectDrawables()
-    local drawables = {}
-    local index = 1
-
-    for _, component in ipairs(self.components) do
-        local componentDrawables, highlighted = component:getDrawables()
-		self.highlighted[component.id] = highlighted
-
-        local count = #componentDrawables
-
-        table.move(componentDrawables, 1, count, index, drawables)
-        index = index + count
-    end
-
-    return drawables
-end
-
-
+-- The scene will retrieve the grid's drawables via getDrawables for global draw order.
 function Scene:draw()
+	local x, y = love.mouse.getPosition()
+	local vec = Vec2(x, y)
+	vec.x = (vec.x - self.window.translate.x) / self.window.scale
+	vec.y = (vec.y - self.window.translate.y) / self.window.scale 
+	local tileX, tileY = self.map:convertPixelToTile(vec.x, vec.y)
+	love.graphics.print("Pixel to tile: " .. math.floor(tileX) - 1 .. " " .. math.floor(tileY) - 1, 0, 500)
+
 	love.graphics.push()
 	love.graphics.translate(self.window.translate.x, self.window.translate.y)
 	love.graphics.scale(self.window.scale)
 
-	for _, d in ipairs(self.drawables) do
-		if not (self.highlighted[d.component] and self.highlighted[d.component].pos.x == d.drawable.pos.x and 
-			self.highlighted[d.component].pos.y == d.drawable.pos.y) then
-				d.drawable:draw()
-		else
-			d.drawable:highlight()
-		end
-	end
- 
+	self.map:draw(self.window.translate.x, self.window.translate.y, self.window.scale, self.window.scale)
+
 	love.graphics.pop()
+end
 
-	for i, val in ipairs(self.components) do
-		if not val:isScalable() then
-			val:draw()
-		end
+function Scene:handleEvent(event)
+	self.player:handleEvent(event)
+
+	if event.name == "PlaceTile" then
+		self:addTile(event.sprite)
+	elseif event.name == "RemoveTile" then
+		self:removeTile(event)
+	elseif event.name == "TranslateAndScale" then
+		print("Grid:TranslateAndScale. " .. event.translate.x .. " " .. event.translate.y .. " ".. event.scale)
+		table.insert(self.queue, { type = event.name, obj = event} )
 	end
 end
 
-function Scene:event(event)
-	if event.name == "save" then
-		table.insert(self.queue, event)
-		return
-	end
-
-	for _, component in ipairs(self.components) do
-		component:handleEvent(event)
-	end
+function Scene:addTile(sprite)
+	local util = Util()
+	local gridCoord = util:getGridCoordAt(sprite.pos, self.window)
+	print("Grid:addTile. " .. gridCoord.x .. " " .. gridCoord.y .. " tile: " .. sprite.id)
+	
+	table.insert(self.queue, { type = "add", obj = Sprite(sprite.id, Vec2(gridCoord.x, gridCoord.y)) } )
 end
 
-function Scene:shutdown()
-	for i, val in ipairs(self.components) do
-		val:shutdown()
-	end
+function Scene:removeTile(event)
+	print("Grid:removeTile. " .. event.pos.x .. " " .. event.pos.y)
 
+	table.insert(self.queue, { type = "remove", obj = event.pos })
 end
 
-function Scene:textinput(t)
-	for i, val in ipairs(self.components) do
-		val:textinput(t)
-	end
-   
+function Scene:highlightTile()
+	local util = Util()
+	local gridCoord = util:getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.window)
+
+	--[[ if self.gridMap[gridCoord:key()] then
+		self.highlighted = { pos = Vec2(gridCoord.x, gridCoord.y) }
+	else 
+		self.highlighted = nil
+	end ]]
 end
 
-function Scene:keypressed(key)
-	for i, val in ipairs(self.components) do
-		val:keypressed(key)
-	end
-end
-
-function Scene:keyreleased(key)
-    for i, val in ipairs(self.components) do
-		val:keyreleased(key)
-	end
-end
-
-function Scene:mousemoved(x, y)
-	for i, val in ipairs(self.components) do
-		val:mousemoved(x, y)
-	end
+function Scene:isScalable()
+	return true
 end
 
 function Scene:mousepressed(x, y, button)
-	for i, val in ipairs(self.components) do
-		val:mousepressed(x, y, button)
-	end
-end
-
-function Scene:mousereleased(x, y, button)
-	for i, val in ipairs(self.components) do
-		val:mousereleased(x, y, button)
-	end
-end
-
-function Scene:wheelmoved(x, y)
-	local mx = love.mouse.getX()
-	local my = love.mouse.getY()
-    if not (y == 0) then -- mouse wheel moved up or down
---		zoom in to point or zoom out of point
-		local mouse_x = mx - self.window.translate.x
-		local mouse_y = my - self.window.translate.y
-		local k = self.dscale^y
-		self.window.scale = self.window.scale * k
-		self.window.translate.x = math.floor(self.window.translate.x + mouse_x * (1 - k))
-		self.window.translate.y = math.floor(self.window.translate.y + mouse_y * (1 - k))
-
-		self:event({name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.scale})
-	else
---		print ('wheel x: ' .. x .. ' y: ' .. y)
-    end
-	
-	for i, val in ipairs(self.components) do
-		val:wheelmoved(x, y)
-	end
-end
-
-function Scene:addComponent(component)
-	if not component.loaded then 
-		component:load(self.bus)
-	end
-
-	table.insert(self.components, component)
-	self.componentMap[component.id] = component
-end
-
-function Scene:removeComponent(id)
-	if self.componentMap[id] then
-		for j, c in ipairs(self.components) do
-			if c.id == id then
-				self.componentMap[id] = nil
-				table.remove(self.components, j)
-			end
-		end
-	end
-end
-
-function Scene:getComponent(id)
-	return self.componentMap[id]
+	self.player:mousepressed(x, y, button)
 end
 
 
