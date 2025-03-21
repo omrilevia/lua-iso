@@ -125,7 +125,7 @@ function SystemMan:mousereleased(x, y, button)
 end
 
 function SystemMan:wheelmoved(x, y)
-	--[[ local mx = love.mouse.getX()
+	local mx = love.mouse.getX()
 	local my = love.mouse.getY()
     if not (y == 0) then -- mouse wheel moved up or down
 --		zoom in to point or zoom out of point
@@ -139,7 +139,7 @@ function SystemMan:wheelmoved(x, y)
 		self:event({name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.scale})
 	else
 --		print ('wheel x: ' .. x .. ' y: ' .. y)
-    end ]]
+    end
 	
 	for i, val in ipairs(self.systems) do
 		val:wheelmoved(x, y)

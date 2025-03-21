@@ -149,7 +149,9 @@ function Scene:draw()
 	love.graphics.translate(self.window.translate.x, self.window.translate.y)
 	love.graphics.scale(self.window.scale)
 
-	self.map:draw(self.window.translate.x, self.window.translate.y, self.window.scale, self.window.scale)
+		for _, layer in ipairs(self.map.layers) do
+			self.map:drawLayer(layer)
+		end
 
 	love.graphics.pop()
 end
