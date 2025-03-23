@@ -29,7 +29,7 @@ function love.load()
 	constants = Constants()
 	local bus = Bus()
 	local player = Player("assets/player/player.png", Vec2(1, 1))
-	local map = Scene("src/maps/test-map01.lua", player)
+	local map = Scene("src/maps/desert.lua", player)
 
 	system = SystemMan({ map })
 	system:load(bus)

@@ -15,7 +15,7 @@ function Util:getGameCoordAt(pos, window)
 
 	--local offsetX = mapH * tileW / 2
 	vec.x = vec.x - constants.GRID_SIZE * constants.TILE_WIDTH/2
-	vec.y = vec.y - constants.TILE_HEIGHT
+	vec.y = vec.y
 
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	local transformed = iso:inverse():transform(vec)
@@ -30,19 +30,11 @@ function Util:getGridCoordAt(pos, window)
 end
 
 -- Pos is a gameCoord example: (1.2, 2.2)
--- Unstable
-function Util:getScreenCoordAt(pos, window)
-	local pos = Vec2(pos.x, pos.y)
-	if window then
-		pos.x = math.floor((pos.x - window.translate.x) / window.scale + 0.5)
-		pos.y = math.floor((pos.y - window.translate.y) / window.scale + 0.5)
-	end
-
+function Util:getScreenCoordAt(pos)
+	local screenPos = Vec2(pos.x, pos.y)
+	
 	local constants = Constants()
-	local transformed = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT):transform(pos)
-
-	transformed.x = transformed.x + constants.X_OFFSET - constants.TILE_WIDTH/2
-	transformed.y = transformed.y + constants.Y_OFFSET
+	local transformed = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT):transform(screenPos)
 
 	return transformed
 end

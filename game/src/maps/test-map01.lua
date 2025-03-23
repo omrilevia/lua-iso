@@ -261,6 +261,7 @@ return {
           gid = 758,
           visible = true,
           properties = {
+            ["collidable"] = true,
             ["pos"] = "6,3",
             ["sortPos"] = "6,3"
           }
@@ -278,6 +279,7 @@ return {
           gid = 742,
           visible = true,
           properties = {
+            ["collidable"] = false,
             ["pos"] = "5,2",
             ["sortPos"] = "6,3"
           }
@@ -295,6 +297,7 @@ return {
           gid = 726,
           visible = true,
           properties = {
+            ["collidable"] = false,
             ["pos"] = "4,1",
             ["sortPos"] = "6,3"
           }

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="8" height="8" tilewidth="64" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="16">
+ <editorsettings>
+  <export target="../../src/maps/desert.lua" format="lua"/>
+ </editorsettings>
+ <tileset firstgid="1" name="desert_tileset" tilewidth="64" tileheight="32" tilecount="560" columns="16">
+  <image source="tileset_desert.png" width="1024" height="1129"/>
+ </tileset>
+ <layer id="1" name="ground" width="8" height="8">
+  <data encoding="csv">
+1,24,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,
+1,24,1,1,1,1,1,1,
+1,1,24,24,24,1,1,1,
+1,24,24,1,24,1,1,1,
+1,1,24,24,24,1,1,1,
+1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1
+</data>
+ </layer>
+ <layer id="3" name="decorative" width="8" height="8">
+  <data encoding="csv">
+0,0,0,0,0,534,0,0,
+0,0,0,0,533,0,550,0,
+0,0,0,0,0,549,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="4" name="sprites">
+  <object id="1" gid="505" x="128" y="160" width="64" height="32">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+    <property name="sortPos" value="3,4"/>
+   </properties>
+  </object>
+  <object id="2" gid="489" x="96" y="128" width="64" height="32">
+   <properties>
+    <property name="sortPos" value="3,4"/>
+   </properties>
+  </object>
+  <object id="3" gid="473" x="64" y="96" width="64" height="32">
+   <properties>
+    <property name="sortPos" value="3,4"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="6" name="collisions">
+  <object id="14" x="94.8873" y="126.239" width="36.6197" height="36.6197"/>
+ </objectgroup>
+ <objectgroup id="5" name="player">
+  <object id="4" name="playerSpawn" x="143.479" y="110.042">
+   <point/>
+  </object>
+ </objectgroup>
+</map>

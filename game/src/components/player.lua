@@ -26,7 +26,7 @@ function Player:update(dt)
 
 	for i, event in ipairs(self.moveQueue) do
 		if event.type == "move" then
-			self:move(event.obj.direction, event.obj.target, dt, i)
+			self:move(event.obj.direction, event.obj.target, event.obj.world, dt, i)
 		end
 	end
 
@@ -37,13 +37,19 @@ function Player:draw()
 	local constants = Constants()
 	-- transform the tile's position to an isometric screen coord
 	local xOffset = constants.GRID_SIZE * constants.TILE_WIDTH / 2 - self.image:getWidth()/2
-	local yOffset = constants.Y_OFFSET
+	local yOffset = constants.Y_OFFSET - self.image:getHeight()
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	local vecIso = iso:transform(self.pos)
 
-	local vec = Util():getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY(), self.super.window))
-	love.graphics.print("Mouse: " .. vec.x .. " " .. vec.y)
-	love.graphics.draw(self.image, vecIso.x + xOffset, vecIso.y + constants.Y_OFFSET)
+	local pos = Util():getGameCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.super.window)
+	
+	local screen = Util():getScreenCoordAt(pos)
+	screen.x = screen.x + xOffset
+
+	love.graphics.print("Screen: " .. screen.x .. " " .. screen.y, 0, 100)
+	love.graphics.print("Mouse: " .. pos.x .. " " .. pos.y)
+
+	love.graphics.draw(self.image, vecIso.x + xOffset, vecIso.y + yOffset)
 end
 
 function Player:getDrawables()
@@ -57,28 +63,45 @@ end
 -- 1 = LMB
 -- 2 = RMB
 function Player:mousepressed(x, y, button)
-	if (button == 1) then
-		self.moveQueue = {}
-		local gameCoordMouse = Util():getGameCoordAt(Vec2(x, y), self.super.window)
-		print("Player move: " .. gameCoordMouse.x .. " " .. gameCoordMouse.y)
-		local cos, sin = Util():getUnitVectorPlayerToMouse(gameCoordMouse, self.pos)
-		
-		table.insert(self.moveQueue, {type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse}})
-	end
+	
 end
 
 function Player:isScalable()
 	return true
 end
 
-function Player:move(direction, target, dt, eventIndex)
-	self.pos.x = self.speed * dt * direction.x + self.pos.x
-	self.pos.y = self.speed * dt * direction.y + self.pos.y
+function Player:move(direction, target, world, dt)
+	local testX = (self.speed * dt * direction.x + self.pos.x) 
+	local testY = (self.speed * dt * direction.y + self.pos.y) 
+
+	local screenPos = Util():getScreenCoordAt(Vec2(testX, testY))
+	screenPos.x = screenPos.x + constants.GRID_SIZE * constants.TILE_WIDTH/2
+	screenPos.y = screenPos.y + constants.TILE_HEIGHT
+
+
+	print("testx, testy: " .. testX .. " " .. testY)
+	print("ScreenPos: " .. screenPos.x .. " " .. screenPos.y)
+
+	local x, y, cols, len = world:move(self, screenPos.x, screenPos.y)
+
+	local gridCoord = Util():getGameCoordAt(Vec2(x, y), self.super.window)
+	print("Player move to x, y: " .. x .. " " .. y)
+	print("Player grid coord: " .. gridCoord.x .. " " .. gridCoord.y)
+
+	if len > 0 then
+		self.pos.x = gridCoord.x
+		self.pos.y = gridCoord.y
+		self.moveQueue = {}
+		return
+	else
+		self.pos.x = testX
+		self.pos.y = testY
+	end
 
 	local distance = Util:getDistance(Vec2(target.x, target.y), self.pos)
 
 	if distance < 0.1 then
-		table.remove(self.moveQueue, eventIndex)
+		self.moveQueue = {}
 		return
 	end
 

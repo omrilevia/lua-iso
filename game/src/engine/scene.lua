@@ -12,30 +12,40 @@ end
 
 function Scene:load(bus, saveData)
 	Scene.super:load(bus)
-	local sti = require("lib.sti")
+	local sti = require "lib.sti"
+	local bump = require "lib.bump"
 
-	self.map = sti(self.id)
+	self.world = bump.newWorld(64)
+	self.map = sti(self.id, { "bump" } )
+
+	self.map:bump_init(self.world)
+
 	local gameObjects = self.map:addCustomLayer("gameObjects")
 
 	local objectLookup = {}
 
 	for _, layer in ipairs(self.map.layers) do
-    	if layer.type == "objectgroup" then
+    	if layer.type == "objectgroup" then 
         	objectLookup[layer.name] = layer.objects  
     	end
-	end
+	end				
 	
 	-- Get player spawn object
 	local playerSpawn = objectLookup["player"][1]
-	local spawnX, spawnY = math.floor(playerSpawn.x/Constants().TILE_WIDTH), math.floor(playerSpawn.y/Constants().TILE_HEIGHT)
+	local spawnX, spawnY = math.floor(playerSpawn.x/Constants().TILE_HEIGHT), math.floor(playerSpawn.y/Constants().TILE_HEIGHT)
+	local playerScreenPos = Util():getScreenCoordAt(Vec2(spawnX, spawnY))
 	self.player.pos = Vec2(spawnX, spawnY)
 	self.player:load()
+	self.player.collidable = true
+	self.world:add(self.player, playerScreenPos.x + constants.GRID_SIZE * constants.TILE_WIDTH/2 - self.player.image:getWidth()/2, 
+		playerScreenPos.y, self.player.image:getWidth(), self.player.image:getHeight())
 
 	-- extract object layers from demo map: collisions, sprites
 	local collisions = objectLookup["collisions"]
 	local sprites = objectLookup["sprites"]
 
 	local drawables = {}
+	local hitBoxes = {}
 
 	table.insert(drawables, self.player)
 	
@@ -48,11 +58,25 @@ function Scene:load(bus, saveData)
 
 		local sortPos = Vec2:fromKey(obj.properties["sortPos"])
 		local pos = Vec2(obj.x / constants.TILE_HEIGHT, obj.y / constants.TILE_HEIGHT)
-
+		local objScreenPos = Util():getScreenCoordAt(Vec2(obj.x, obj.y))
 		local sprite = Sprite(gid, pos, {image = tilesetImage, quad = quad})
 		sprite.sortPos = sortPos
+		sprite.collidable = obj.properties["collidable"]
 
 		table.insert(drawables, sprite)
+	end
+
+	for _, box in ipairs(collisions) do
+		local pos = Vec2(box.x / constants.TILE_HEIGHT, box.y / constants.TILE_HEIGHT)
+		local w = box.width 
+		local h = box.height 
+
+		local screenPos = Util():getScreenCoordAt(pos)
+		screenPos.x = screenPos.x + constants.GRID_SIZE/2 * constants.TILE_WIDTH
+
+		local obj = {pos = screenPos, w = w, h = w}
+		table.insert(hitBoxes, obj)
+		self.world:add(obj, screenPos.x, screenPos.y, w, h)
 	end
 
 	-- Draw player and sprites
@@ -62,11 +86,24 @@ function Scene:load(bus, saveData)
 		for _, drawable in ipairs(drawables) do
 			drawable:draw()
 		end
+
+		for _, box in ipairs(hitBoxes) do
+			love.graphics.rectangle("line", box.pos.x, box.pos.y, box.w, box.h)
+		end
 	end
 
+	local world = self.world
 	gameObjects.update = function(self, dt)
 		for _, drawable in ipairs(drawables) do
 			drawable:update(dt)
+			local drawableScreenPos = Util():getScreenCoordAt(Vec2(drawable.pos.x, drawable.pos.y))
+
+			if drawable.collidable then
+				if drawable.isPlayer then
+					drawableScreenPos.y = drawableScreenPos.y -	drawable.image:getHeight()
+				end
+				world:update(drawable, drawableScreenPos.x + constants.GRID_SIZE/2 * constants.TILE_WIDTH, drawableScreenPos.y)
+			end
 		end
 
 		-- sort drawables 
@@ -138,12 +175,9 @@ end
 
 -- The scene will retrieve the grid's drawables via getDrawables for global draw order.
 function Scene:draw()
-	local x, y = love.mouse.getPosition()
-	local vec = Vec2(x, y)
-	vec.x = (vec.x - self.window.translate.x) / self.window.scale
-	vec.y = (vec.y - self.window.translate.y) / self.window.scale 
-	local tileX, tileY = self.map:convertPixelToTile(vec.x, vec.y)
-	love.graphics.print("Pixel to tile: " .. math.floor(tileX) - 1 .. " " .. math.floor(tileY) - 1, 0, 500)
+	local x, y = love.mouse:getPosition()
+	local vec = Util():getGridCoordAt(Vec2(x, y), self.window)
+	love.graphics.print("Mouse: " .. vec.x .. " " .. vec.y)
 
 	love.graphics.push()
 	love.graphics.translate(self.window.translate.x, self.window.translate.y)
@@ -152,6 +186,8 @@ function Scene:draw()
 		for _, layer in ipairs(self.map.layers) do
 			self.map:drawLayer(layer)
 		end
+
+		self.map:bump_draw()
 
 	love.graphics.pop()
 end
@@ -199,8 +235,16 @@ function Scene:isScalable()
 end
 
 function Scene:mousepressed(x, y, button)
-	self.player:mousepressed(x, y, button)
+	if (button == 1) then
+		local gameCoordMouse = Util():getGameCoordAt(Vec2(x, y), self.window)
+		print("Player move: " .. gameCoordMouse.x .. " " .. gameCoordMouse.y)
+		local cos, sin = Util():getUnitVectorPlayerToMouse(gameCoordMouse, self.player.pos)
+		
+		self.player.moveQueue = {}
+		table.insert(self.player.moveQueue, {type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse, world = self.world}})
+	end
 end
+
 
 
 

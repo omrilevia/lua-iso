@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="8" height="8" tilewidth="64" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="26">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="8" height="8" tilewidth="64" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="28">
  <editorsettings>
   <export target="../../src/maps/test-map01.lua" format="lua"/>
  </editorsettings>
@@ -69,25 +69,29 @@
   <properties>
    <property name="collidable" type="bool" value="false"/>
   </properties>
-  <object id="10" x="20" y="120" width="52.5" height="43.5"/>
+  <object id="10" x="25.6923" y="122.548" width="41.2293" height="41.1467" rotation="0.383228"/>
   <object id="11" x="191.5" y="24.5" width="34.5" height="41.5"/>
   <object id="12" x="95.5" y="-11.5"/>
+  <object id="26" x="47.3333" y="155.333"/>
  </objectgroup>
  <objectgroup id="5" name="sprites">
   <object id="13" gid="758" x="224" y="128" width="64" height="32">
    <properties>
+    <property name="collidable" type="bool" value="true"/>
     <property name="pos" value="6,3"/>
     <property name="sortPos" value="6,3"/>
    </properties>
   </object>
   <object id="14" gid="742" x="192" y="96" width="64" height="32">
    <properties>
+    <property name="collidable" type="bool" value="false"/>
     <property name="pos" value="5,2"/>
     <property name="sortPos" value="6,3"/>
    </properties>
   </object>
   <object id="15" gid="726" x="160" y="64" width="64" height="32">
    <properties>
+    <property name="collidable" type="bool" value="false"/>
     <property name="pos" value="4,1"/>
     <property name="sortPos" value="6,3"/>
    </properties>
