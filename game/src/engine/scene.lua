@@ -15,10 +15,11 @@ function Scene:load(bus, saveData)
 	local sti = require "lib.sti"
 	local bump = require "lib.bump"
 
-	self.world = bump.newWorld(64)
+	self.map = sti(self.id)
+	--[[ self.world = bump.newWorld(64)
 	self.map = sti(self.id, { "bump" } )
 
-	self.map:bump_init(self.world)
+	self.map:bump_init(self.world) ]]
 
 	local gameObjects = self.map:addCustomLayer("gameObjects")
 
@@ -32,13 +33,13 @@ function Scene:load(bus, saveData)
 	
 	-- Get player spawn object
 	local playerSpawn = objectLookup["player"][1]
-	local spawnX, spawnY = math.floor(playerSpawn.x/Constants().TILE_HEIGHT), math.floor(playerSpawn.y/Constants().TILE_HEIGHT)
+	local spawnX, spawnY = playerSpawn.x/Constants().TILE_HEIGHT, playerSpawn.y/Constants().TILE_HEIGHT
 	local playerScreenPos = Util():getScreenCoordAt(Vec2(spawnX, spawnY))
 	self.player.pos = Vec2(spawnX, spawnY)
 	self.player:load()
 	self.player.collidable = true
-	self.world:add(self.player, playerScreenPos.x + constants.GRID_SIZE * constants.TILE_WIDTH/2 - self.player.image:getWidth()/2, 
-		playerScreenPos.y, self.player.image:getWidth(), self.player.image:getHeight())
+	--self.world:add(self.player, playerScreenPos.x + constants.GRID_SIZE * constants.TILE_WIDTH/2 - self.player.image:getWidth()/2, 
+	--	playerScreenPos.y, self.player.image:getWidth(), self.player.image:getHeight())
 
 	-- extract object layers from demo map: collisions, sprites
 	local collisions = objectLookup["collisions"]
@@ -58,7 +59,7 @@ function Scene:load(bus, saveData)
 
 		local sortPos = Vec2:fromKey(obj.properties["sortPos"])
 		local pos = Vec2(obj.x / constants.TILE_HEIGHT, obj.y / constants.TILE_HEIGHT)
-		local objScreenPos = Util():getScreenCoordAt(Vec2(obj.x, obj.y))
+
 		local sprite = Sprite(gid, pos, {image = tilesetImage, quad = quad})
 		sprite.sortPos = sortPos
 		sprite.collidable = obj.properties["collidable"]
@@ -66,18 +67,19 @@ function Scene:load(bus, saveData)
 		table.insert(drawables, sprite)
 	end
 
-	for _, box in ipairs(collisions) do
+	--[[ for _, box in ipairs(collisions) do
 		local pos = Vec2(box.x / constants.TILE_HEIGHT, box.y / constants.TILE_HEIGHT)
 		local w = box.width 
 		local h = box.height 
 
 		local screenPos = Util():getScreenCoordAt(pos)
-		screenPos.x = screenPos.x + constants.GRID_SIZE/2 * constants.TILE_WIDTH
+		screenPos.x = screenPos.x + constants.GRID_SIZE/2 * constants.TILE_WIDTH - constants.TILE_WIDTH/2
+		--screenPos.y = screenPos
 
 		local obj = {pos = screenPos, w = w, h = w}
 		table.insert(hitBoxes, obj)
 		self.world:add(obj, screenPos.x, screenPos.y, w, h)
-	end
+	end ]]
 
 	-- Draw player and sprites
 	gameObjects.draw = function(self)
@@ -101,8 +103,9 @@ function Scene:load(bus, saveData)
 			if drawable.collidable then
 				if drawable.isPlayer then
 					drawableScreenPos.y = drawableScreenPos.y -	drawable.image:getHeight()
+					drawableScreenPos.x = drawableScreenPos.x - drawable.image:getWidth()/2
 				end
-				world:update(drawable, drawableScreenPos.x + constants.GRID_SIZE/2 * constants.TILE_WIDTH, drawableScreenPos.y)
+				--world:update(drawable, drawableScreenPos.x + constants.GRID_SIZE/2 * constants.TILE_WIDTH, drawableScreenPos.y)
 			end
 		end
 
@@ -187,7 +190,7 @@ function Scene:draw()
 			self.map:drawLayer(layer)
 		end
 
-		self.map:bump_draw()
+		--self.map:bump_draw()
 
 	love.graphics.pop()
 end

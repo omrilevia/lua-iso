@@ -45,6 +45,7 @@ function Player:draw()
 	
 	local screen = Util():getScreenCoordAt(pos)
 	screen.x = screen.x + xOffset
+	screen.y = screen.y + yOffset
 
 	love.graphics.print("Screen: " .. screen.x .. " " .. screen.y, 0, 100)
 	love.graphics.print("Mouse: " .. pos.x .. " " .. pos.y)
@@ -74,9 +75,9 @@ function Player:move(direction, target, world, dt)
 	local testX = (self.speed * dt * direction.x + self.pos.x) 
 	local testY = (self.speed * dt * direction.y + self.pos.y) 
 
-	local screenPos = Util():getScreenCoordAt(Vec2(testX, testY))
-	screenPos.x = screenPos.x + constants.GRID_SIZE * constants.TILE_WIDTH/2
-	screenPos.y = screenPos.y + constants.TILE_HEIGHT
+	--[[ local screenPos = Util():getScreenCoordAt(Vec2(testX, testY))
+	screenPos.x = screenPos.x + constants.GRID_SIZE * constants.TILE_WIDTH / 2 - self.image:getWidth()/2
+	screenPos.y = screenPos.y + constants.Y_OFFSET - self.image:getHeight()
 
 
 	print("testx, testy: " .. testX .. " " .. testY)
@@ -84,11 +85,10 @@ function Player:move(direction, target, world, dt)
 
 	local x, y, cols, len = world:move(self, screenPos.x, screenPos.y)
 
-	local gridCoord = Util():getGameCoordAt(Vec2(x, y), self.super.window)
-	print("Player move to x, y: " .. x .. " " .. y)
-	print("Player grid coord: " .. gridCoord.x .. " " .. gridCoord.y)
-
 	if len > 0 then
+		x = x + self.image:getWidth()/2
+		y = y + self.image:getHeight()
+		local gridCoord = Util():getGameCoordAt(Vec2(x, y), self.super.window)
 		self.pos.x = gridCoord.x
 		self.pos.y = gridCoord.y
 		self.moveQueue = {}
@@ -96,7 +96,10 @@ function Player:move(direction, target, world, dt)
 	else
 		self.pos.x = testX
 		self.pos.y = testY
-	end
+	end ]]
+
+	self.pos.x = testX
+	self.pos.y = testY
 
 	local distance = Util:getDistance(Vec2(target.x, target.y), self.pos)
 

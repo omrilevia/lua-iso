@@ -33,7 +33,7 @@
  <objectgroup id="4" name="sprites">
   <object id="1" gid="505" x="128" y="160" width="64" height="32">
    <properties>
-    <property name="collidable" type="bool" value="false"/>
+    <property name="collidable" type="bool" value="true"/>
     <property name="sortPos" value="3,4"/>
    </properties>
   </object>
@@ -48,9 +48,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="6" name="collisions">
-  <object id="14" x="94.8873" y="126.239" width="36.6197" height="36.6197"/>
- </objectgroup>
+ <objectgroup id="6" name="collisions"/>
  <objectgroup id="5" name="player">
   <object id="4" name="playerSpawn" x="143.479" y="110.042">
    <point/>
