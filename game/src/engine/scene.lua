@@ -13,7 +13,7 @@ end
 function Scene:load(bus, saveData)
 	Scene.super:load(bus)
 	local sti = require "lib.sti"
-	local bump = require "lib.bump"
+
 
 	self.map = sti(self.id)
 	--[[ self.world = bump.newWorld(64)
