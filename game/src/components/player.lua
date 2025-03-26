@@ -47,8 +47,8 @@ function Player:draw()
 	screen.x = screen.x + xOffset
 	screen.y = screen.y + yOffset
 
-	love.graphics.print("Screen: " .. screen.x .. " " .. screen.y, 0, 100)
-	love.graphics.print("Mouse: " .. pos.x .. " " .. pos.y)
+	love.graphics.print("Player Screen: " .. screen.x .. " " .. screen.y - yOffset, 0, 100)
+	love.graphics.print("Mouse: " .. pos.x .. " " .. pos.y, 0, 200)
 
 	love.graphics.draw(self.image, vecIso.x + xOffset, vecIso.y + yOffset)
 end
