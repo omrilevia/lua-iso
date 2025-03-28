@@ -10,7 +10,7 @@ return {
   tilewidth = 64,
   tileheight = 32,
   nextlayerid = 7,
-  nextobjectid = 18,
+  nextobjectid = 24,
   properties = {},
   tilesets = {
     {
@@ -180,7 +180,7 @@ return {
       properties = {},
       objects = {
         {
-          id = 17,
+          id = 22,
           name = "",
           type = "",
           shape = "polygon",
@@ -195,6 +195,26 @@ return {
             { x = 0, y = 32 },
             { x = 32, y = 32 },
             { x = 32, y = 0 }
+          },
+          properties = {}
+        },
+        {
+          id = 23,
+          name = "",
+          type = "",
+          shape = "polygon",
+          x = 81.1064,
+          y = 42.5795,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          polygon = {
+            { x = 0, y = 0 },
+            { x = 12.5618, y = 27.6361 },
+            { x = 47.3485, y = 33.0473 },
+            { x = 43.0968, y = 0.966296 },
+            { x = 14.4944, y = -29.9552 }
           },
           properties = {}
         }
@@ -219,8 +239,8 @@ return {
           name = "playerSpawn",
           type = "",
           shape = "point",
-          x = 143.479,
-          y = 110.042,
+          x = 243.007,
+          y = 241.652,
           width = 0,
           height = 0,
           rotation = 0,

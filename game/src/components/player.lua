@@ -26,7 +26,7 @@ function Player:update(dt)
 
 	for i, event in ipairs(self.moveQueue) do
 		if event.type == "move" then
-			self:move(event.obj.direction, event.obj.target, event.obj.world, dt, i)
+			self:move(event.obj.direction, event.obj.target, event.obj.collider, dt)
 		end
 	end
 
@@ -34,27 +34,12 @@ function Player:update(dt)
 end
 
 function Player:draw()
-	local constants = Constants()
-	-- transform the tile's position to an isometric screen coord
-	local xOffset = constants.GRID_SIZE * constants.TILE_WIDTH / 2 - self.image:getWidth()/2
-	local yOffset = constants.Y_OFFSET - self.image:getHeight()
-	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
-	local vecIso = iso:transform(self.pos)
+	local vecIso = Util():getRectangleScreenPos(self.pos, self.image:getWidth(), self.image:getHeight())
 
-	local pos = Util():getGameCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.super.window)
-	
-	local screen = Util():getScreenCoordAt(pos)
-	screen.x = screen.x + xOffset
-	screen.y = screen.y + yOffset
+	love.graphics.draw(self.image, vecIso.x, vecIso.y)
+	local x1,y1, x2,y2 = self.hitbox:bbox()
+	love.graphics.rectangle('line', x1, y1, x2 - x1, y2 - y1)
 
-	love.graphics.print("Player Screen: " .. screen.x .. " " .. screen.y - yOffset, 0, 100)
-	love.graphics.print("Mouse: " .. pos.x .. " " .. pos.y, 0, 200)
-
-	love.graphics.draw(self.image, vecIso.x + xOffset, vecIso.y + yOffset)
-end
-
-function Player:getDrawables()
-	return { {drawable = self, component = "player"} }
 end
 
 function Player:handleEvent(event)
@@ -71,35 +56,29 @@ function Player:isScalable()
 	return true
 end
 
-function Player:move(direction, target, world, dt)
-	local testX = (self.speed * dt * direction.x + self.pos.x) 
-	local testY = (self.speed * dt * direction.y + self.pos.y) 
+function Player:move(direction, target, collider, dt)
+	local dx = self.speed * dt * direction.x
+	local dy = self.speed * dt * direction.y
 
-	--[[ local screenPos = Util():getScreenCoordAt(Vec2(testX, testY))
-	screenPos.x = screenPos.x + constants.GRID_SIZE * constants.TILE_WIDTH / 2 - self.image:getWidth()/2
-	screenPos.y = screenPos.y + constants.Y_OFFSET - self.image:getHeight()
+	local screenDelta = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT):transform(Vec2(dx, dy))
 
+	self.pos.x = dx + self.pos.x
+	self.pos.y = dy + self.pos.y
+	self.hitbox:move(screenDelta.x, screenDelta.y)
 
-	print("testx, testy: " .. testX .. " " .. testY)
-	print("ScreenPos: " .. screenPos.x .. " " .. screenPos.y)
+	local collisions = collider:collisions(self.hitbox)
+	for other, vec in pairs(collisions) do
+    	self.hitbox:move(vec.x,  vec.y)
 
-	local x, y, cols, len = world:move(self, screenPos.x, screenPos.y)
+		local currentScreen = util:getScreenCoordAt(self.pos)
+		currentScreen.x = currentScreen.x + vec.x
+		currentScreen.y = currentScreen.y + vec.y
 
-	if len > 0 then
-		x = x + self.image:getWidth()/2
-		y = y + self.image:getHeight()
-		local gridCoord = Util():getGameCoordAt(Vec2(x, y), self.super.window)
-		self.pos.x = gridCoord.x
-		self.pos.y = gridCoord.y
+		self.pos = util:getGameCoordAt(currentScreen) 
+
 		self.moveQueue = {}
 		return
-	else
-		self.pos.x = testX
-		self.pos.y = testY
-	end ]]
-
-	self.pos.x = testX
-	self.pos.y = testY
+	end
 
 	local distance = Util:getDistance(Vec2(target.x, target.y), self.pos)
 

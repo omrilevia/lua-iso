@@ -36,7 +36,19 @@ function Util:getScreenCoordAt(pos)
 	local constants = Constants()
 	local transformed = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT):transform(screenPos)
 
+	transformed.x = transformed.x + constants.ORIGIN
+	transformed.y = transformed.y + constants.Y_OFFSET
+
 	return transformed
+end
+
+function Util:getRectangleScreenPos(pos, w, h)
+	local sc = self:getScreenCoordAt(pos)
+
+	local xOffset = constants.X_OFFSET + - w / 2
+	local yOffset = constants.Y_OFFSET - h
+
+	return sc:add(Vec2(xOffset, yOffset))
 end
 
 function Util:getUnitVectorPlayerToMouse(mousePos, objPos)

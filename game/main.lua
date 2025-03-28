@@ -27,6 +27,8 @@ function love.load()
 	require "src.components.player"
 
 	constants = Constants()
+	util = Util()
+	
 	local bus = Bus()
 	local player = Player("assets/player/player.png", Vec2(1, 1))
 	local map = Scene("src/maps/desert.lua", player)

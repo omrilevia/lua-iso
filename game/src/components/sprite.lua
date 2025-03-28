@@ -14,21 +14,20 @@ end
 function Sprite:update(dt)
 end
 
+-- In tiled the position of image is centered around the middle of the base
+-- Have draw the image with reference to its left corner (-width/2, -tileheight)
 function Sprite:draw(highlight)
 	local constants = Constants()
 	-- transform the tile's position to an isometric screen coord
 	local zOffset = constants.MAX_TILE_HEIGHT - constants.TILE_HEIGHT
 	local yOffset = constants.Y_OFFSET - constants.TILE_HEIGHT
-	local xOffset = constants.GRID_SIZE * constants.TILE_WIDTH / 2
+	local xOffset = constants.GRID_SIZE * constants.TILE_WIDTH / 2 - constants.TILE_WIDTH / 2
 
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	local vecIso = iso:transform(self.pos)
+
 	assert(iso:inverse():transform(vecIso).x == self.pos.x)
 	assert(iso:inverse():transform(vecIso).y == self.pos.y)
-
-	-- in tiled the center of the top is drawn at pos
-	-- translate right corner to center base
-	xOffset = xOffset - constants.TILE_WIDTH/2
 
 	love.graphics.draw(self.drawable.image, self.drawable.quad, xOffset + vecIso.x, yOffset + vecIso.y + zOffset)
 end

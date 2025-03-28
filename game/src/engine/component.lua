@@ -32,10 +32,6 @@ end
 function Component:highlight()
 end
 
-function Component:isScalable()
-	return false
-end
-
 function Component:handleEvent(event)
 	if event.name == "TranslateAndScale" then
 		print("Grid:TranslateAndScale. " .. event.translate.x .. " " .. event.translate.y .. " ".. event.scale)

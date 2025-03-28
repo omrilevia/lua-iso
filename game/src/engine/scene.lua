@@ -13,17 +13,19 @@ end
 function Scene:load(bus, saveData)
 	Scene.super:load(bus)
 	local sti = require "lib.sti"
+	local HC = require "lib.HC"
 
+	self.collider = HC.new(constants.TILE_WIDTH * 4)
 
 	self.map = sti(self.id)
-	--[[ self.world = bump.newWorld(64)
-	self.map = sti(self.id, { "bump" } )
-
-	self.map:bump_init(self.world) ]]
 
 	local gameObjects = self.map:addCustomLayer("gameObjects")
 
 	local objectLookup = {}
+
+	-- Player and objects from object layers
+	local drawables = {}
+	local hitboxes = {}
 
 	for _, layer in ipairs(self.map.layers) do
     	if layer.type == "objectgroup" then 
@@ -33,22 +35,21 @@ function Scene:load(bus, saveData)
 	
 	-- Get player spawn object
 	local playerSpawn = objectLookup["player"][1]
-	local spawnX, spawnY = playerSpawn.x/Constants().TILE_HEIGHT, playerSpawn.y/Constants().TILE_HEIGHT
-	local playerScreenPos = Util():getScreenCoordAt(Vec2(spawnX, spawnY))
+	local spawnX, spawnY = playerSpawn.x / Constants().TILE_HEIGHT, playerSpawn.y / Constants().TILE_HEIGHT
 	self.player.pos = Vec2(spawnX, spawnY)
 	self.player:load()
-	self.player.collidable = true
-	--self.world:add(self.player, playerScreenPos.x + constants.GRID_SIZE * constants.TILE_WIDTH/2 - self.player.image:getWidth()/2, 
-	--	playerScreenPos.y, self.player.image:getWidth(), self.player.image:getHeight())
+	table.insert(drawables, self.player)
+
+	local playerScreenPos = util:getRectangleScreenPos(self.player.pos, self.player.image:getWidth(), self.player.image:getHeight())
+
+	-- add player hitbox to the world's collider
+	-- current assumption is that player HB is a rectangle based on its image. 
+	self.player.hitbox = self.collider:rectangle(playerScreenPos.x, playerScreenPos.y, self.player.image:getWidth(), self.player.image:getHeight())
 
 	-- extract object layers from demo map: collisions, sprites
 	local collisions = objectLookup["collisions"]
 	local sprites = objectLookup["sprites"]
 
-	local drawables = {}
-	local hitBoxes = {}
-
-	table.insert(drawables, self.player)
 	
 	for _, obj in ipairs(sprites) do
 		local gid = obj.gid
@@ -67,19 +68,29 @@ function Scene:load(bus, saveData)
 		table.insert(drawables, sprite)
 	end
 
-	--[[ for _, box in ipairs(collisions) do
-		local pos = Vec2(box.x / constants.TILE_HEIGHT, box.y / constants.TILE_HEIGHT)
-		local w = box.width 
-		local h = box.height 
+	for _, collision in ipairs(collisions) do
 
-		local screenPos = Util():getScreenCoordAt(pos)
-		screenPos.x = screenPos.x + constants.GRID_SIZE/2 * constants.TILE_WIDTH - constants.TILE_WIDTH/2
-		--screenPos.y = screenPos
+		local gridPos = Vec2(collision.x / constants.TILE_HEIGHT, collision.y / constants.TILE_HEIGHT)
+		local screenPos = util:getScreenCoordAt(gridPos)
+		
+		local polygon = {
+			shape = "polygon",
+			points = collision.polygon,
+			pos = Vec2(screenPos.x, screenPos.y),
+			getScreenPoly = function() 
+				local screenPoly = {}
+				for _, point in ipairs(collision.polygon) do
+					table.insert(screenPoly, point.x)
+					table.insert(screenPoly, point.y)
+				end
 
-		local obj = {pos = screenPos, w = w, h = w}
-		table.insert(hitBoxes, obj)
-		self.world:add(obj, screenPos.x, screenPos.y, w, h)
-	end ]]
+				return screenPoly
+			end
+		}
+
+		table.insert(hitboxes, polygon)
+		self.collider:polygon(unpack(polygon.getScreenPoly()))
+	end 
 
 	-- Draw player and sprites
 	gameObjects.draw = function(self)
@@ -89,8 +100,13 @@ function Scene:load(bus, saveData)
 			drawable:draw()
 		end
 
-		for _, box in ipairs(hitBoxes) do
-			love.graphics.rectangle("line", box.pos.x, box.pos.y, box.w, box.h)
+		for _, hb in ipairs(hitboxes) do
+			if hb.shape == "rectangle" then
+				love.graphics.rectangle("line", hb.pos.x, hb.pos.y, hb.w, hb.h)
+			elseif hb.shape == "polygon" then
+				love.graphics.polygon("line", unpack(hb:getScreenPoly()))
+				love.graphics.points(hb.pos.x, hb.pos.y)
+			end
 		end
 	end
 
@@ -98,15 +114,6 @@ function Scene:load(bus, saveData)
 	gameObjects.update = function(self, dt)
 		for _, drawable in ipairs(drawables) do
 			drawable:update(dt)
-			local drawableScreenPos = Util():getScreenCoordAt(Vec2(drawable.pos.x, drawable.pos.y))
-
-			if drawable.collidable then
-				if drawable.isPlayer then
-					drawableScreenPos.y = drawableScreenPos.y -	drawable.image:getHeight()
-					drawableScreenPos.x = drawableScreenPos.x - drawable.image:getWidth()/2
-				end
-				--world:update(drawable, drawableScreenPos.x + constants.GRID_SIZE/2 * constants.TILE_WIDTH, drawableScreenPos.y)
-			end
 		end
 
 		-- sort drawables 
@@ -180,7 +187,9 @@ end
 function Scene:draw()
 	local x, y = love.mouse:getPosition()
 	local vec = Util():getGridCoordAt(Vec2(x, y), self.window)
+	local screen = util:getScreenCoordAt(vec)
 	love.graphics.print("Mouse: " .. vec.x .. " " .. vec.y)
+	love.graphics.print("Mouse px: " .. screen.x .. " " .. screen.y, 0, 20)
 
 	love.graphics.push()
 	love.graphics.translate(self.window.translate.x, self.window.translate.y)
@@ -244,7 +253,7 @@ function Scene:mousepressed(x, y, button)
 		local cos, sin = Util():getUnitVectorPlayerToMouse(gameCoordMouse, self.player.pos)
 		
 		self.player.moveQueue = {}
-		table.insert(self.player.moveQueue, {type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse, world = self.world}})
+		table.insert(self.player.moveQueue, {type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse, collider = self.collider}})
 	end
 end
 
