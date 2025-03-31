@@ -51,7 +51,7 @@ function Util:getRectangleScreenPos(pos, w, h)
 	return sc:add(Vec2(xOffset, yOffset))
 end
 
-function Util:getUnitVectorPlayerToMouse(mousePos, objPos)
+function Util:getUnitVectorObjToMouse(mousePos, objPos)
 	local angle = math.atan2(mousePos.y - objPos.y, mousePos.x - objPos.x)
   
   	return math.cos(angle), math.sin(angle)
@@ -59,6 +59,34 @@ end
 
 function Util:getDistance(vec1, vec2) 
 	return math.sqrt((vec2.y - vec1.y)^2 + (vec2.x - vec1.x)^2)
+end
+
+-- returns one of [n, w, e, s, ne, se, nw, sw]
+-- vec is unit vector (cos, sin)
+function Util:getCardinal(vec, tolerance)
+	local t = tolerance or 0
+
+	local direction = ''
+
+	print(vec.x .. " " .. vec.y)
+
+	if vec.y < -tolerance then 
+		direction = direction .. 'n'
+	elseif vec.y > tolerance then
+		direction = direction .. 's'
+	end
+
+	if vec.x > tolerance then 
+		direction = direction .. 'e'
+	elseif vec.x < -tolerance then
+		direction = direction .. 'w'
+	end
+
+	if direction == '' then 
+		return self:getCardinal(vec, 0) 
+	end
+
+	return direction
 end
 
 

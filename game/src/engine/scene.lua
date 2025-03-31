@@ -44,7 +44,8 @@ function Scene:load(bus, saveData)
 
 	-- add player hitbox to the world's collider
 	-- current assumption is that player HB is a rectangle based on its image. 
-	self.player.hitbox = self.collider:rectangle(playerScreenPos.x, playerScreenPos.y, self.player.image:getWidth(), self.player.image:getHeight())
+	self.player.hitbox = self.collider:rectangle(playerScreenPos.x + self.player.image:getWidth()/4, playerScreenPos.y, 
+		self.player.image:getWidth()/2, self.player.image:getHeight())
 
 	-- extract object layers from demo map: collisions, sprites
 	local collisions = objectLookup["collisions"]
@@ -248,9 +249,9 @@ end
 
 function Scene:mousepressed(x, y, button)
 	if (button == 1) then
-		local gameCoordMouse = Util():getGameCoordAt(Vec2(x, y), self.window)
+		local gameCoordMouse = util:getGameCoordAt(Vec2(x, y), self.window)
 		print("Player move: " .. gameCoordMouse.x .. " " .. gameCoordMouse.y)
-		local cos, sin = Util():getUnitVectorPlayerToMouse(gameCoordMouse, self.player.pos)
+		local cos, sin = util:getUnitVectorObjToMouse(gameCoordMouse, self.player.pos)
 		
 		self.player.moveQueue = {}
 		table.insert(self.player.moveQueue, {type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse, collider = self.collider}})

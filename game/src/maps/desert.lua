@@ -10,7 +10,7 @@ return {
   tilewidth = 64,
   tileheight = 32,
   nextlayerid = 7,
-  nextobjectid = 24,
+  nextobjectid = 34,
   properties = {},
   tilesets = {
     {
@@ -128,7 +128,7 @@ return {
           visible = true,
           properties = {
             ["collidable"] = false,
-            ["sortPos"] = "3,4"
+            ["sortPos"] = "4,5"
           }
         },
         {
@@ -144,7 +144,7 @@ return {
           gid = 489,
           visible = true,
           properties = {
-            ["sortPos"] = "3,4"
+            ["sortPos"] = "4,5"
           }
         },
         {
@@ -160,7 +160,7 @@ return {
           gid = 473,
           visible = true,
           properties = {
-            ["sortPos"] = "3,4"
+            ["sortPos"] = "4,5"
           }
         }
       }
@@ -180,41 +180,21 @@ return {
       properties = {},
       objects = {
         {
-          id = 22,
+          id = 33,
           name = "",
           type = "",
           shape = "polygon",
-          x = 96,
-          y = 128,
+          x = 96.3485,
+          y = 128.407,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polygon = {
             { x = 0, y = 0 },
-            { x = 0, y = 32 },
-            { x = 32, y = 32 },
-            { x = 32, y = 0 }
-          },
-          properties = {}
-        },
-        {
-          id = 23,
-          name = "",
-          type = "",
-          shape = "polygon",
-          x = 81.1064,
-          y = 42.5795,
-          width = 0,
-          height = 0,
-          rotation = 0,
-          visible = true,
-          polygon = {
-            { x = 0, y = 0 },
-            { x = 12.5618, y = 27.6361 },
-            { x = 47.3485, y = 33.0473 },
-            { x = 43.0968, y = 0.966296 },
-            { x = 14.4944, y = -29.9552 }
+            { x = 8.55049, y = 0.135722 },
+            { x = 8.68621, y = 9.2291 },
+            { x = 0.407166, y = 10.9935 }
           },
           properties = {}
         }
@@ -239,8 +219,8 @@ return {
           name = "playerSpawn",
           type = "",
           shape = "point",
-          x = 243.007,
-          y = 241.652,
+          x = 178.912,
+          y = 50.4283,
           width = 0,
           height = 0,
           rotation = 0,
