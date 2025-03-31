@@ -68,17 +68,15 @@ function Util:getCardinal(vec, tolerance)
 
 	local direction = ''
 
-	print(vec.x .. " " .. vec.y)
-
-	if vec.y < -tolerance then 
+	if vec.y < -t then 
 		direction = direction .. 'n'
-	elseif vec.y > tolerance then
+	elseif vec.y > t then
 		direction = direction .. 's'
 	end
 
-	if vec.x > tolerance then 
+	if vec.x > t then 
 		direction = direction .. 'e'
-	elseif vec.x < -tolerance then
+	elseif vec.x < -t then
 		direction = direction .. 'w'
 	end
 

@@ -6,11 +6,13 @@ function Player:new(id, pos)
 	self.pos = pos
 	self.sortPos = pos
 	-- tiles per second
-	self.speed = 3
+	self.speed = 2
 	self.moveQueue = {}
 	self.index = 1
 	self.isPlayer = true
 	self.walkAnimations = {}
+	self.idleAnimations = {}
+
 	Player.super:new(id, pos)
 end
 
@@ -18,17 +20,23 @@ function Player:load(bus, player)
 	local anim8 = require 'lib.anim8'
 
 	self.walkSheet = love.graphics.newImage('assets/player/player_walk.png')
-	local g = anim8.newGrid(32, 32, self.walkSheet:getWidth(), self.walkSheet:getHeight(), 0, 0, 0)
+	self.idleSheet = love.graphics.newImage('assets/player/player_idle.png')
+	local gWalk = anim8.newGrid(32, 32, self.walkSheet:getWidth(), self.walkSheet:getHeight(), 0, 0, 0)
+	local gIdle = anim8.newGrid(32, 32, self.idleSheet:getWidth(), self.idleSheet:getHeight(), 0, 0, 0)
 	
 	local directions = {'n', 'nw', 'w', 'sw', 's', 'se', 'e', 'ne'}
 	for i = 1, 8 do 
-		local frames = g('1-8', i)
 		local direction = directions[i] 
-		self.walkAnimations[direction] = anim8.newAnimation(frames, 0.1)
+
+		local walkFrames = gWalk('1-8', i)
+		self.walkAnimations[direction] = anim8.newAnimation(walkFrames, 0.1)
+
+		local idleFrames = gIdle('1-12', i)
+		self.idleAnimations[direction] = anim8.newAnimation(idleFrames, 0.1)
 	end
 
 	self.image = love.graphics.newImage(self.id)
-	self.currentAnimation = {animation = self.walkAnimations['w'], dt = 0}
+	self.currentAnimation = {animation = self.idleAnimations['w'], dt = 0}
 	self.bus = bus
 end
 
@@ -54,7 +62,12 @@ function Player:draw()
 	local vecIso = Util():getRectangleScreenPos(self.pos, self.image:getWidth(), self.image:getHeight())
 
 	--love.graphics.draw(self.image, vecIso.x, vecIso.y)
-	self.currentAnimation.animation:draw(self.walkSheet, vecIso.x, vecIso.y)
+	local image = self.idleSheet
+	if #self.moveQueue > 0 then 
+		image = self.walkSheet
+	end
+
+	self.currentAnimation.animation:draw(image, vecIso.x, vecIso.y)
 	local x1,y1, x2,y2 = self.hitbox:bbox()
 	love.graphics.rectangle('line', x1, y1, x2 - x1, y2 - y1)
 
@@ -81,8 +94,10 @@ function Player:move(direction, target, collider, dt)
 
 	local screenDelta = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT):transform(Vec2(dx, dy))
 
+	local cardinal = util:getCardinal(screenDelta, 0.3)
+
 	if self.currentAnimation.dt > .1 then 
-		self.currentAnimation = {animation = self.walkAnimations[util:getCardinal(screenDelta, 0.3)], dt = 0}
+		self.currentAnimation = {animation = self.walkAnimations[cardinal], dt = 0}
 	end
 
 	self.pos.x = dx + self.pos.x
@@ -100,6 +115,7 @@ function Player:move(direction, target, collider, dt)
 		self.pos = util:getGameCoordAt(currentScreen) 
 
 		self.moveQueue = {}
+		self.currentAnimation = {animation = self.idleAnimations[cardinal], dt = 0}
 		return
 	end
 
@@ -107,6 +123,7 @@ function Player:move(direction, target, collider, dt)
 
 	if distance < 0.1 then
 		self.moveQueue = {}
+		self.currentAnimation = {animation = self.idleAnimations[cardinal], dt = 0}
 		return
 	end
 end
