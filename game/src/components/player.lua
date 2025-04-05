@@ -36,7 +36,7 @@ function Player:load(bus, player)
 	end
 
 	self.image = love.graphics.newImage(self.id)
-	self.currentAnimation = {animation = self.idleAnimations['w'], dt = 0}
+	self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations['w'], dt = 0}
 	self.bus = bus
 end
 
@@ -61,13 +61,7 @@ end
 function Player:draw()
 	local vecIso = Util():getRectangleScreenPos(self.pos, self.image:getWidth(), self.image:getHeight())
 
-	--love.graphics.draw(self.image, vecIso.x, vecIso.y)
-	local image = self.idleSheet
-	if #self.moveQueue > 0 then 
-		image = self.walkSheet
-	end
-
-	self.currentAnimation.animation:draw(image, vecIso.x, vecIso.y)
+	self.currentAnimation.animation:draw(self.currentAnimation.image, vecIso.x, vecIso.y)
 	local x1,y1, x2,y2 = self.hitbox:bbox()
 	love.graphics.rectangle('line', x1, y1, x2 - x1, y2 - y1)
 
@@ -97,7 +91,7 @@ function Player:move(direction, target, collider, dt)
 	local cardinal = util:getCardinal(screenDelta, 0.3)
 
 	if self.currentAnimation.dt > .1 then 
-		self.currentAnimation = {animation = self.walkAnimations[cardinal], dt = 0}
+		self.currentAnimation = {image = self.walkSheet, animation = self.walkAnimations[cardinal], dt = 0}
 	end
 
 	self.pos.x = dx + self.pos.x
@@ -106,16 +100,16 @@ function Player:move(direction, target, collider, dt)
 
 	local collisions = collider:collisions(self.hitbox)
 	for other, vec in pairs(collisions) do
-    	self.hitbox:move(8 * vec.x,  8 * vec.y)
+    	self.hitbox:move(4 * vec.x,  4 * vec.y)
 
 		local currentScreen = util:getScreenCoordAt(self.pos)
-		currentScreen.x = currentScreen.x +  8 * vec.x
-		currentScreen.y = currentScreen.y + 8 * vec.y
+		currentScreen.x = currentScreen.x +  4 * vec.x
+		currentScreen.y = currentScreen.y + 4 * vec.y
 
 		self.pos = util:getGameCoordAt(currentScreen) 
 
 		self.moveQueue = {}
-		self.currentAnimation = {animation = self.idleAnimations[cardinal], dt = 0}
+		self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations[cardinal], dt = 0}
 		return
 	end
 
@@ -123,7 +117,7 @@ function Player:move(direction, target, collider, dt)
 
 	if distance < 0.1 then
 		self.moveQueue = {}
-		self.currentAnimation = {animation = self.idleAnimations[cardinal], dt = 0}
+		self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations[cardinal], dt = 0}
 		return
 	end
 end
