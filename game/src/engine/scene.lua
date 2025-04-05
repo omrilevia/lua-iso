@@ -6,7 +6,8 @@ function Scene:new(mapid, playerRef)
 	self.player = playerRef
 	self.queue = {}
 	self.id = mapid
-	self.window = {translate = Vec2(0, 0), scale = 1.0}
+	self.window = {translate = Vec2(64, 64), scale = 2}
+	self.dscale = constants.SCROLL_SCALE_FACTOR
 	Scene.super.new(self, mapid, Vec2(0, 0))
 end
 
@@ -187,10 +188,12 @@ end
 -- The scene will retrieve the grid's drawables via getDrawables for global draw order.
 function Scene:draw()
 	local x, y = love.mouse:getPosition()
-	local vec = Util():getGridCoordAt(Vec2(x, y), self.window)
+	local vec = util:getGridCoordAt(Vec2(x, y), self.window)
 	local screen = util:getScreenCoordAt(vec)
 	love.graphics.print("Mouse: " .. vec.x .. " " .. vec.y)
 	love.graphics.print("Mouse px: " .. screen.x .. " " .. screen.y, 0, 20)
+	love.graphics.print("Window translate/scale: " .. self.window.translate.x .. " " .. self.window.translate.y .. " " .. self.window.scale, 0, 300)
+
 
 	love.graphics.push()
 	love.graphics.translate(self.window.translate.x, self.window.translate.y)
@@ -199,8 +202,6 @@ function Scene:draw()
 		for _, layer in ipairs(self.map.layers) do
 			self.map:drawLayer(layer)
 		end
-
-		--self.map:bump_draw()
 
 	love.graphics.pop()
 end
@@ -256,6 +257,24 @@ function Scene:mousepressed(x, y, button)
 		self.player.moveQueue = {}
 		table.insert(self.player.moveQueue, {type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse, collider = self.collider}})
 	end
+end
+
+function Scene:wheelmoved(x, y)
+	local mx = love.mouse.getX()
+	local my = love.mouse.getY()
+    if not (y == 0) then -- mouse wheel moved up or down
+--		zoom in to point or zoom out of point
+		local mouse_x = mx - self.window.translate.x
+		local mouse_y = my - self.window.translate.y
+		local k = self.dscale^y
+		self.window.scale = self.window.scale * k
+		self.window.translate.x = math.floor(self.window.translate.x + mouse_x * (1 - k))
+		self.window.translate.y = math.floor(self.window.translate.y + mouse_y * (1 - k))
+
+		table.insert(self.queue, {name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.scale})
+	else
+--		print ('wheel x: ' .. x .. ' y: ' .. y)
+    end
 end
 
 

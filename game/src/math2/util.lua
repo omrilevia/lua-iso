@@ -37,7 +37,7 @@ function Util:getScreenCoordAt(pos)
 	local transformed = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT):transform(screenPos)
 
 	transformed.x = transformed.x + constants.ORIGIN
-	transformed.y = transformed.y + constants.Y_OFFSET
+	transformed.y = transformed.y
 
 	return transformed
 end
@@ -45,8 +45,8 @@ end
 function Util:getRectangleScreenPos(pos, w, h)
 	local sc = self:getScreenCoordAt(pos)
 
-	local xOffset = constants.X_OFFSET + - w / 2
-	local yOffset = constants.Y_OFFSET - h
+	local xOffset = - w / 2
+	local yOffset = - h
 
 	return sc:add(Vec2(xOffset, yOffset))
 end

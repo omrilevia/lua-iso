@@ -10,11 +10,6 @@ function SystemMan:new(components)
 	end
 
 	self.queue = {}
-	--	sets up window variables
-	self.window = {translate={x=0, y=0}, scale=1}
-	self.dscale = constants.SCROLL_SCALE_FACTOR 
-	self.drawables = {}
-	self.highlighted = {}
 end
 
 function SystemMan:load(bus)
@@ -125,22 +120,6 @@ function SystemMan:mousereleased(x, y, button)
 end
 
 function SystemMan:wheelmoved(x, y)
-	local mx = love.mouse.getX()
-	local my = love.mouse.getY()
-    if not (y == 0) then -- mouse wheel moved up or down
---		zoom in to point or zoom out of point
-		local mouse_x = mx - self.window.translate.x
-		local mouse_y = my - self.window.translate.y
-		local k = self.dscale^y
-		self.window.scale = self.window.scale * k
-		self.window.translate.x = math.floor(self.window.translate.x + mouse_x * (1 - k))
-		self.window.translate.y = math.floor(self.window.translate.y + mouse_y * (1 - k))
-
-		self:event({name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.scale})
-	else
---		print ('wheel x: ' .. x .. ' y: ' .. y)
-    end
-	
 	for i, val in ipairs(self.systems) do
 		val:wheelmoved(x, y)
 	end

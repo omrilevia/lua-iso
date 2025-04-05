@@ -20,7 +20,7 @@ function Sprite:draw(highlight)
 	local constants = Constants()
 	-- transform the tile's position to an isometric screen coord
 	local zOffset = constants.MAX_TILE_HEIGHT - constants.TILE_HEIGHT
-	local yOffset = constants.Y_OFFSET - constants.TILE_HEIGHT
+	local yOffset = - constants.TILE_HEIGHT
 	local xOffset = constants.GRID_SIZE * constants.TILE_WIDTH / 2 - constants.TILE_WIDTH / 2
 
 	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)

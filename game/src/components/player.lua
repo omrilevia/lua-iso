@@ -59,7 +59,7 @@ function Player:update(dt)
 end
 
 function Player:draw()
-	local vecIso = Util():getRectangleScreenPos(self.pos, self.image:getWidth(), self.image:getHeight())
+	local vecIso = util:getRectangleScreenPos(self.pos, self.image:getWidth(), self.image:getHeight())
 
 	self.currentAnimation.animation:draw(self.currentAnimation.image, vecIso.x, vecIso.y)
 	local x1,y1, x2,y2 = self.hitbox:bbox()
