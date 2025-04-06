@@ -3,22 +3,25 @@ lume = require "lib.lume"
 Scene = Component:extend()
 
 function Scene:new(mapid, playerRef)
+	self.id = "scene"
 	self.player = playerRef
 	self.queue = {}
-	self.id = mapid
-	self.window = {translate = Vec2(64, 64), scale = 2}
+	self.mapId = mapid
+	self.window = {translate = Vec2(constants.X_OFFSET, constants.Y_OFFSET), scale = constants.SCALE_FACTOR}
 	self.dscale = constants.SCROLL_SCALE_FACTOR
 	Scene.super.new(self, mapid, Vec2(0, 0))
 end
 
 function Scene:load(bus, saveData)
+	saveData = saveData or {}
+
 	Scene.super:load(bus)
 	local sti = require "lib.sti"
 	local HC = require "lib.HC"
 
 	self.collider = HC.new(constants.TILE_WIDTH * 4)
 
-	self.map = sti(self.id)
+	self.map = sti(saveData.mapId or self.mapId)
 
 	local gameObjects = self.map:addCustomLayer("gameObjects")
 
@@ -37,7 +40,7 @@ function Scene:load(bus, saveData)
 	-- Get player spawn object
 	local playerSpawn = objectLookup["player"][1]
 	local spawnX, spawnY = playerSpawn.x / Constants().TILE_HEIGHT, playerSpawn.y / Constants().TILE_HEIGHT
-	self.player.pos = Vec2(spawnX, spawnY)
+	self.player.pos = saveData.playerPos or Vec2(spawnX, spawnY)
 	self.player:load()
 	table.insert(drawables, self.player)
 
@@ -96,8 +99,6 @@ function Scene:load(bus, saveData)
 
 	-- Draw player and sprites
 	gameObjects.draw = function(self)
-		local gridCoord = Util():getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.window)
-
 		for _, drawable in ipairs(drawables) do
 			drawable:draw()
 		end
@@ -112,7 +113,6 @@ function Scene:load(bus, saveData)
 		end
 	end
 
-	local world = self.world
 	gameObjects.update = function(self, dt)
 		for _, drawable in ipairs(drawables) do
 			drawable:update(dt)
@@ -129,14 +129,16 @@ function Scene:load(bus, saveData)
 	self.map:removeLayer("sprites")
 end
 
+-- save player position. For certain maps it makes more sense for the player to reset to one of a few spawn points or checkpoints.
+-- save map. 
 function Scene:save() 
-	local map = {}
+	local scene = {}
 
-	for i, tileVal in ipairs(self.gridList) do
-		table.insert(map, {x = tileVal.drawable.pos.x, y = tileVal.drawable.pos.y, id = tileVal.drawable.id})
-	end
+	scene.id = self.id
+	scene.playerPos = self.player.pos
+	scene.mapId = self.mapId
 
-	return map
+	return scene
 end
 
 function Scene:update(dt)
@@ -192,7 +194,7 @@ function Scene:draw()
 	local screen = util:getScreenCoordAt(vec)
 	love.graphics.print("Mouse: " .. vec.x .. " " .. vec.y)
 	love.graphics.print("Mouse px: " .. screen.x .. " " .. screen.y, 0, 20)
-	love.graphics.print("Window translate/scale: " .. self.window.translate.x .. " " .. self.window.translate.y .. " " .. self.window.scale, 0, 300)
+	love.graphics.print("Window translate/scale: " .. self.window.translate.x .. " " .. self.window.translate.y .. " " .. self.window.scale, 0, 40)
 
 
 	love.graphics.push()

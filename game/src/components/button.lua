@@ -22,5 +22,11 @@ function Button:press()
 	return self.action()
 end
 
+function Button:keypressed(key)
+	if (key == "s") then
+		self:press()
+	end
+end
+
 
 

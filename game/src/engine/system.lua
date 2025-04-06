@@ -31,7 +31,7 @@ function SystemMan:load(bus)
 end
 
 function SystemMan:save()
-	print("Scene:save.")
+	print("System:save.")
 	local data = {}
 
 	for i, val in ipairs(self.systems) do 

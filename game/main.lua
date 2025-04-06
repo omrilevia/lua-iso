@@ -3,7 +3,7 @@ if arg[2] == "debug" then
 end
 
 function love.load()
-	imgui = require "lib.imgui"
+	--imgui = require "lib.imgui"
 	Object = require "lib.classic"
 
 	require "src.engine.component"
@@ -15,7 +15,7 @@ function love.load()
 	require "src.engine.constants"
 	require "src.components.sprite"
 	require "src.components.mouse"
-	require "src.components.gui"
+	--require "src.components.gui"
 	require "src.engine.system"
 	require "src.engine.bus"
 	require "src.engine.event"
@@ -30,10 +30,13 @@ function love.load()
 	util = Util()
 	
 	local bus = Bus()
+	-- Eventually will be part of a menu
+	local button = Button("Hit 's' to save.", Vec2(0, 60), function() bus:event({name = "save"}) end)
 	local player = Player("assets/player/player.png", Vec2(1, 1))
 	local map = Scene("src/maps/desert.lua", player)
 
-	system = SystemMan({ map })
+	system = SystemMan({ map, button })
+
 	system:load(bus)
 end
 
@@ -65,16 +68,6 @@ end
 function love.keypressed(key)
 	system:keypressed(key)
 	--currentScene:keypressed(key)
-
-	--[[ if key == "s" then
-		button:press()
-	elseif key == "g" then
-		if currentScene:getComponent("gui") then
-			currentScene:removeComponent("gui")
-		else
-			currentScene:addComponent(gui)
-		end
-	end ]]
 end
 
 function love.keyreleased(key)
