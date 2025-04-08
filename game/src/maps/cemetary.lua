@@ -107,7 +107,7 @@ return {
           gid = 239,
           visible = true,
           properties = {
-            ["sortPos"] = "7,3"
+            ["footprint"] = "cross1"
           }
         },
         {
@@ -123,7 +123,7 @@ return {
           gid = 223,
           visible = true,
           properties = {
-            ["sortPos"] = "7,3"
+            ["footprint"] = "cross1"
           }
         },
         {
@@ -139,7 +139,7 @@ return {
           gid = 237,
           visible = true,
           properties = {
-            ["sortPos"] = "9,3"
+            ["footprint"] = "cross2"
           }
         },
         {
@@ -155,7 +155,7 @@ return {
           gid = 221,
           visible = true,
           properties = {
-            ["sortPos"] = "9,3"
+            ["footprint"] = "cross2"
           }
         }
       }
@@ -176,7 +176,7 @@ return {
       objects = {
         {
           id = 6,
-          name = "",
+          name = "cross1",
           type = "",
           shape = "polygon",
           x = 194.011,
@@ -195,7 +195,7 @@ return {
         },
         {
           id = 7,
-          name = "",
+          name = "cross2",
           type = "",
           shape = "polygon",
           x = 262.9,

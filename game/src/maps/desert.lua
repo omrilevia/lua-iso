@@ -128,7 +128,7 @@ return {
           visible = true,
           properties = {
             ["collidable"] = false,
-            ["sortPos"] = "4,5"
+            ["footprint"] = "cactus"
           }
         },
         {
@@ -144,7 +144,7 @@ return {
           gid = 489,
           visible = true,
           properties = {
-            ["sortPos"] = "4,5"
+            ["footprint"] = "cactus"
           }
         },
         {
@@ -160,7 +160,7 @@ return {
           gid = 473,
           visible = true,
           properties = {
-            ["sortPos"] = "4,5"
+            ["footprint"] = "cactus"
           }
         }
       }
@@ -181,7 +181,7 @@ return {
       objects = {
         {
           id = 36,
-          name = "",
+          name = "cactus",
           type = "",
           shape = "polygon",
           x = 125.596,

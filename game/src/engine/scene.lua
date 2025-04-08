@@ -39,12 +39,11 @@ function Scene:instance(mapId, saveData)
 
 	local gameObjects = self.map:addCustomLayer("gameObjects")
 
-	local objectLookup = {}
-
 	-- Player and objects from object layers
 	local drawables = {}
 	local hitboxes = {}
 
+	local objectLookup = {}
 	for _, layer in ipairs(self.map.layers) do
     	if layer.type == "objectgroup" then 
         	objectLookup[layer.name] = layer.objects  
@@ -74,29 +73,16 @@ function Scene:instance(mapId, saveData)
 	-- extract object layers from demo map: collisions, sprites, exits
 	local collisions = objectLookup["collisions"]
 	local sprites = objectLookup["sprites"]
-
-	-- load game objects 
-	for _, obj in ipairs(sprites) do
-		local gid = obj.gid
-		local quad = self.map.tiles[gid].quad
-		local tileset = self.map.tiles[gid].tileset
-		local tilesetImage = self.map.tilesets[tileset].image
-
-
-		local sortPos = Vec2:fromKey(obj.properties["sortPos"])
-		local pos = Vec2(obj.x / constants.TILE_HEIGHT, obj.y / constants.TILE_HEIGHT)
-
-		local sprite = Sprite(gid, pos, {image = tilesetImage, quad = quad})
-		sprite.sortPos = sortPos
-		sprite.collidable = obj.properties["collidable"]
-
-		table.insert(drawables, sprite)
-	end
+	local collisionNameMap = {}
 
 	-- load collisions
 	for _, collision in ipairs(collisions) do
 		local gridPos = Vec2(collision.x / constants.TILE_HEIGHT, collision.y / constants.TILE_HEIGHT)
 		local screenPos = util:getScreenCoordAt(gridPos)
+
+		if collision.name ~= "" then
+			collisionNameMap[collision.name] = gridPos
+		end
 		
 		local polygon = {
 			shape = "polygon",
@@ -122,8 +108,25 @@ function Scene:instance(mapId, saveData)
 		else
 			hcPoly.tag = "collidable"
 		end
-		
 	end 
+
+	-- load game objects 
+	for _, obj in ipairs(sprites) do
+		local gid = obj.gid
+		local quad = self.map.tiles[gid].quad
+		local tileset = self.map.tiles[gid].tileset
+		local tilesetImage = self.map.tilesets[tileset].image
+
+
+		local footprint = obj.properties["footprint"]
+		local pos = Vec2(obj.x / constants.TILE_HEIGHT, obj.y / constants.TILE_HEIGHT)
+
+		local sprite = Sprite(gid, pos, {image = tilesetImage, quad = quad})
+		sprite.sortPos = collisionNameMap[footprint]
+		sprite.collidable = obj.properties["collidable"]
+
+		table.insert(drawables, sprite)
+	end
 
 	-- Draw player and sprites
 	gameObjects.draw = function(self)

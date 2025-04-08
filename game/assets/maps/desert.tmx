@@ -34,22 +34,22 @@
   <object id="1" gid="505" x="128" y="160" width="64" height="32">
    <properties>
     <property name="collidable" type="bool" value="false"/>
-    <property name="sortPos" value="4,5"/>
+    <property name="footprint" value="cactus"/>
    </properties>
   </object>
   <object id="2" gid="489" x="96" y="128" width="64" height="32">
    <properties>
-    <property name="sortPos" value="4,5"/>
+    <property name="footprint" value="cactus"/>
    </properties>
   </object>
   <object id="3" gid="473" x="64" y="96" width="64" height="32">
    <properties>
-    <property name="sortPos" value="4,5"/>
+    <property name="footprint" value="cactus"/>
    </properties>
   </object>
  </objectgroup>
  <objectgroup id="6" name="collisions">
-  <object id="36" x="125.596" y="159.102">
+  <object id="36" name="cactus" x="125.596" y="159.102">
    <polygon points="0,0 -5.28151,1.92817 -6.95818,-0.0838335 -7.62885,-4.44318 -4.69468,-6.70668 -1.84434,-9.55702 0.922169,-6.62285"/>
   </object>
   <object id="40" x="0" y="128">
