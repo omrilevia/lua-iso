@@ -1,12 +1,17 @@
 Util = Object:extend()
 
+function Util:new(gridSize, tileWidth, tileHeight)
+	self.gridSize = gridSize
+	self.tileWidth = tileWidth
+	self.tileHeight = tileHeight
+	self.origin = self.gridSize * tileWidth / 2
+end
+
+
 -- pos is isometric screen cord.
 -- perform inverse transform on pos, and reverse x and y offsets. 
 function Util:getGameCoordAt(pos, window)
-	local constants = Constants()
-
 	local vec = Vec2(pos.x, pos.y)
-
 
 	if window then
 		vec.x = math.floor((vec.x - window.translate.x) / window.scale + 0.5)
@@ -14,10 +19,10 @@ function Util:getGameCoordAt(pos, window)
 	end
 
 	--local offsetX = mapH * tileW / 2
-	vec.x = vec.x - constants.GRID_SIZE * constants.TILE_WIDTH/2
+	vec.x = vec.x - self.origin
 	vec.y = vec.y
 
-	local iso = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT)
+	local iso = Iso(self.tileWidth, self.tileHeight)
 	local transformed = iso:inverse():transform(vec)
 	
 	return transformed
@@ -31,12 +36,15 @@ end
 
 -- Pos is a gameCoord example: (1.2, 2.2)
 function Util:getScreenCoordAt(pos)
-	local screenPos = Vec2(pos.x, pos.y)
+	local screenPos = Vec2(pos.x, pos.y)		
 	
-	local constants = Constants()
-	local transformed = Iso(constants.TILE_WIDTH, constants.TILE_HEIGHT):transform(screenPos)
+	local iso = Iso(self.tileWidth, self.tileHeight)
+	local transformed = iso:transform(screenPos)
 
-	transformed.x = transformed.x + constants.ORIGIN
+	--assert(iso:inverse():transform(transformed).x == screenPos.x)
+	--assert(iso:inverse():transform(transformed).y == screenPos.y)
+
+	transformed.x = transformed.x + self.origin
 	transformed.y = transformed.y
 
 	return transformed
@@ -85,6 +93,11 @@ function Util:getCardinal(vec, tolerance)
 	end
 
 	return direction
+end
+
+function Util:setGridSize(gridSize)
+	self.gridSize = gridSize
+	self.origin = gridSize * self.tileWidth / 2
 end
 
 

@@ -5,16 +5,16 @@ return {
   class = "",
   orientation = "isometric",
   renderorder = "right-down",
-  width = 8,
-  height = 8,
+  width = 16,
+  height = 16,
   tilewidth = 64,
   tileheight = 32,
-  nextlayerid = 9,
-  nextobjectid = 41,
+  nextlayerid = 6,
+  nextobjectid = 9,
   properties = {},
   tilesets = {
     {
-      name = "desert_tileset",
+      name = "tileset_desert",
       firstgid = 1,
       class = "",
       tilewidth = 64,
@@ -48,10 +48,10 @@ return {
       type = "tilelayer",
       x = 0,
       y = 0,
-      width = 8,
-      height = 8,
+      width = 16,
+      height = 16,
       id = 1,
-      name = "ground",
+      name = "floor",
       class = "",
       visible = true,
       opacity = 1,
@@ -62,48 +62,28 @@ return {
       properties = {},
       encoding = "lua",
       data = {
-        1, 24, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1,
-        1, 24, 1, 1, 1, 1, 1, 1,
-        1, 1, 24, 24, 24, 1, 1, 1,
-        1, 24, 24, 1, 24, 1, 1, 1,
-        1, 1, 24, 24, 24, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1
-      }
-    },
-    {
-      type = "tilelayer",
-      x = 0,
-      y = 0,
-      width = 8,
-      height = 8,
-      id = 3,
-      name = "decorative",
-      class = "",
-      visible = true,
-      opacity = 1,
-      offsetx = 0,
-      offsety = 0,
-      parallaxx = 1,
-      parallaxy = 1,
-      properties = {},
-      encoding = "lua",
-      data = {
-        0, 0, 0, 0, 0, 534, 0, 0,
-        0, 0, 0, 0, 533, 0, 550, 0,
-        0, 0, 0, 0, 0, 549, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 532, 0, 0,
-        0, 0, 0, 0, 531, 0, 548, 0,
-        0, 0, 0, 0, 0, 547, 0, 0
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
       }
     },
     {
       type = "objectgroup",
       draworder = "topdown",
-      id = 4,
+      id = 3,
       name = "sprites",
       class = "",
       visible = true,
@@ -115,36 +95,19 @@ return {
       properties = {},
       objects = {
         {
-          id = 1,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 128,
-          y = 160,
-          width = 64,
-          height = 32,
-          rotation = 0,
-          gid = 505,
-          visible = true,
-          properties = {
-            ["collidable"] = false,
-            ["sortPos"] = "4,5"
-          }
-        },
-        {
           id = 2,
           name = "",
           type = "",
           shape = "rectangle",
-          x = 96,
-          y = 128,
+          x = 224,
+          y = 96,
           width = 64,
           height = 32,
           rotation = 0,
-          gid = 489,
+          gid = 239,
           visible = true,
           properties = {
-            ["sortPos"] = "4,5"
+            ["sortPos"] = "7,3"
           }
         },
         {
@@ -152,15 +115,47 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 64,
+          x = 192,
+          y = 64,
+          width = 64,
+          height = 32,
+          rotation = 0,
+          gid = 223,
+          visible = true,
+          properties = {
+            ["sortPos"] = "7,3"
+          }
+        },
+        {
+          id = 4,
+          name = "",
+          type = "",
+          shape = "rectangle",
+          x = 288,
           y = 96,
           width = 64,
           height = 32,
           rotation = 0,
-          gid = 473,
+          gid = 237,
           visible = true,
           properties = {
-            ["sortPos"] = "4,5"
+            ["sortPos"] = "9,3"
+          }
+        },
+        {
+          id = 5,
+          name = "",
+          type = "",
+          shape = "rectangle",
+          x = 256,
+          y = 64,
+          width = 64,
+          height = 32,
+          rotation = 0,
+          gid = 221,
+          visible = true,
+          properties = {
+            ["sortPos"] = "9,3"
           }
         }
       }
@@ -168,7 +163,7 @@ return {
     {
       type = "objectgroup",
       draworder = "topdown",
-      id = 6,
+      id = 4,
       name = "collisions",
       class = "",
       visible = true,
@@ -180,46 +175,62 @@ return {
       properties = {},
       objects = {
         {
-          id = 36,
+          id = 6,
           name = "",
           type = "",
           shape = "polygon",
-          x = 125.596,
-          y = 159.102,
+          x = 194.011,
+          y = 66.5817,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polygon = {
             { x = 0, y = 0 },
-            { x = -5.28151, y = 1.92817 },
-            { x = -6.95818, y = -0.0838335 },
-            { x = -7.62885, y = -4.44318 },
-            { x = -4.69468, y = -6.70668 },
-            { x = -1.84434, y = -9.55702 },
-            { x = 0.922169, y = -6.62285 }
+            { x = 18.8068, y = 1.55857 },
+            { x = 20.5731, y = 20.5731 },
+            { x = 5.19524, y = 20.5731 }
           },
           properties = {}
         },
         {
-          id = 40,
+          id = 7,
           name = "",
           type = "",
           shape = "polygon",
-          x = 0,
-          y = 128,
+          x = 262.9,
+          y = 83.3103,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polygon = {
             { x = 0, y = 0 },
-            { x = 0, y = -32 },
-            { x = -32, y = -64 },
-            { x = -32, y = -32 }
+            { x = 19.7419, y = -0.207809 },
+            { x = 18.1833, y = -7.37724 },
+            { x = -1.76638, y = -7.79286 }
+          },
+          properties = {}
+        },
+        {
+          id = 8,
+          name = "",
+          type = "",
+          shape = "polygon",
+          x = 512,
+          y = 224,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          polygon = {
+            { x = 0, y = 0 },
+            { x = 0, y = 32 },
+            { x = 32, y = 32 },
+            { x = 32, y = 0 }
           },
           properties = {
-            ["exit"] = "cemetary"
+            ["exit"] = "desert"
           }
         }
       }
@@ -239,12 +250,12 @@ return {
       properties = {},
       objects = {
         {
-          id = 4,
+          id = 1,
           name = "playerSpawn",
           type = "",
           shape = "point",
-          x = 17.2467,
-          y = 116.292,
+          x = 491.5,
+          y = 238.5,
           width = 0,
           height = 0,
           rotation = 0,

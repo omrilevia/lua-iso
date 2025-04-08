@@ -1,7 +1,6 @@
 SystemMan = Object:extend()
 
 function SystemMan:new(components)
-	local constants = Constants()
 	self.systems = components
 	self.systemMap = {}
 

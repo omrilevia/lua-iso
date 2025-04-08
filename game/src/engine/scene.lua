@@ -16,12 +16,26 @@ function Scene:load(bus, saveData)
 	saveData = saveData or {}
 
 	Scene.super:load(bus)
-	local sti = require "lib.sti"
-	local HC = require "lib.HC"
+	self.sti = require "lib.sti"
+	self.HC = require "lib.HC"
 
-	self.collider = HC.new(constants.TILE_WIDTH * 4)
+	self:instance(self.mapId, saveData)
+end
 
-	self.map = sti(saveData.mapId or self.mapId)
+function Scene:instance(mapId, saveData)
+	saveData = saveData or {}
+
+	self.collider = self.HC.new(constants.TILE_WIDTH * 4)
+	self.mapId = saveData.mapId or mapId
+
+	local mapFile = "/src/maps/" .. self.mapId .. ".lua"
+	self.map = self.sti(mapFile)
+
+	-- Bad practice, but let's modify global variable state. Use tileWidth for gridSize analog assuming grid is square. 
+	util:setGridSize(self.map.width)
+
+	-- TODO: set window size and scaling based off of map dimensions.
+	self.window = {translate = Vec2(0, 0), scale = 1}
 
 	local gameObjects = self.map:addCustomLayer("gameObjects")
 
@@ -50,12 +64,18 @@ function Scene:load(bus, saveData)
 	-- current assumption is that player HB is a rectangle based on its image. 
 	self.player.hitbox = self.collider:rectangle(playerScreenPos.x + self.player.image:getWidth()/4, playerScreenPos.y, 
 		self.player.image:getWidth()/2, self.player.image:getHeight())
+	self.player.hitbox.tag = "playerHitbox"
 
-	-- extract object layers from demo map: collisions, sprites
+	-- useful to know when the player's feet collide with a specific area. Draw rectangle around player's feet.
+	self.player.feet = self.collider:rectangle(playerScreenPos.x + self.player.image:getWidth()/4, playerScreenPos.y + 3/4 * self.player.image:getHeight(), 
+	self.player.image:getWidth()/2, self.player.image:getHeight() * 1/4)
+	self.player.feet.tag = "playerFeet"
+
+	-- extract object layers from demo map: collisions, sprites, exits
 	local collisions = objectLookup["collisions"]
 	local sprites = objectLookup["sprites"]
 
-	
+	-- load game objects 
 	for _, obj in ipairs(sprites) do
 		local gid = obj.gid
 		local quad = self.map.tiles[gid].quad
@@ -73,8 +93,8 @@ function Scene:load(bus, saveData)
 		table.insert(drawables, sprite)
 	end
 
+	-- load collisions
 	for _, collision in ipairs(collisions) do
-
 		local gridPos = Vec2(collision.x / constants.TILE_HEIGHT, collision.y / constants.TILE_HEIGHT)
 		local screenPos = util:getScreenCoordAt(gridPos)
 		
@@ -94,7 +114,15 @@ function Scene:load(bus, saveData)
 		}
 
 		table.insert(hitboxes, polygon)
-		self.collider:polygon(unpack(polygon.getScreenPoly()))
+		local hcPoly = self.collider:polygon(unpack(polygon.getScreenPoly()))
+
+
+		if collision.properties.exit then
+			hcPoly.tag = "exit:" .. collision.properties.exit
+		else
+			hcPoly.tag = "collidable"
+		end
+		
 	end 
 
 	-- Draw player and sprites
@@ -218,11 +246,13 @@ function Scene:handleEvent(event)
 	elseif event.name == "TranslateAndScale" then
 		print("Grid:TranslateAndScale. " .. event.translate.x .. " " .. event.translate.y .. " ".. event.scale)
 		table.insert(self.queue, { type = event.name, obj = event} )
+	elseif event.name == "Instance" then
+		-- TODO: Need to save the current map state somewhere so it can be loaded later.
+		self:instance(event.mapId)
 	end
 end
 
 function Scene:addTile(sprite)
-	local util = Util()
 	local gridCoord = util:getGridCoordAt(sprite.pos, self.window)
 	print("Grid:addTile. " .. gridCoord.x .. " " .. gridCoord.y .. " tile: " .. sprite.id)
 	
@@ -236,7 +266,6 @@ function Scene:removeTile(event)
 end
 
 function Scene:highlightTile()
-	local util = Util()
 	local gridCoord = util:getGridCoordAt(Vec2(love.mouse:getX(), love.mouse:getY()), self.window)
 
 	--[[ if self.gridMap[gridCoord:key()] then

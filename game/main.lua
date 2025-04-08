@@ -27,13 +27,13 @@ function love.load()
 	require "src.components.player"
 
 	constants = Constants()
-	util = Util()
+	util = Util(constants.GRID_SIZE, constants.TILE_WIDTH, constants.TILE_HEIGHT)
 	
 	local bus = Bus()
 	-- Eventually will be part of a menu
 	local button = Button("Hit 's' to save.", Vec2(0, 60), function() bus:event({name = "save"}) end)
 	local player = Player("assets/player/player.png", Vec2(1, 1))
-	local map = Scene("src/maps/desert.lua", player)
+	local map = Scene("desert", player)
 
 	system = SystemMan({ map, button })
 

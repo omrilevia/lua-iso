@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="8" height="8" tilewidth="64" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="34">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="8" height="8" tilewidth="64" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="41">
  <editorsettings>
   <export target="../../src/maps/desert.lua" format="lua"/>
  </editorsettings>
@@ -25,9 +25,9 @@
 0,0,0,0,0,549,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0
+0,0,0,0,0,532,0,0,
+0,0,0,0,531,0,548,0,
+0,0,0,0,0,547,0,0
 </data>
  </layer>
  <objectgroup id="4" name="sprites">
@@ -49,12 +49,18 @@
   </object>
  </objectgroup>
  <objectgroup id="6" name="collisions">
-  <object id="33" x="96.3485" y="128.407">
-   <polygon points="0,0 8.55049,0.135722 8.68621,9.2291 0.407166,10.9935"/>
+  <object id="36" x="125.596" y="159.102">
+   <polygon points="0,0 -5.28151,1.92817 -6.95818,-0.0838335 -7.62885,-4.44318 -4.69468,-6.70668 -1.84434,-9.55702 0.922169,-6.62285"/>
+  </object>
+  <object id="40" x="0" y="128">
+   <properties>
+    <property name="exit" value="cemetary"/>
+   </properties>
+   <polygon points="0,0 0,-32 -32,-64 -32,-32"/>
   </object>
  </objectgroup>
  <objectgroup id="5" name="player">
-  <object id="4" name="playerSpawn" x="178.912" y="50.4283">
+  <object id="4" name="playerSpawn" x="17.2467" y="116.292">
    <point/>
   </object>
  </objectgroup>

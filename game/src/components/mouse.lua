@@ -18,7 +18,6 @@ function Mouse:update(dt)
 end
 
 function Mouse:draw()
-	local constants = Constants()
 	if self.spriteAttached then
 		love.graphics.draw(self.spriteAttached.image, self.x - constants.TILE_WIDTH/2, self.y - constants.TILE_WIDTH/2)
 	end
@@ -60,7 +59,6 @@ end
 -- 1 = LMB
 -- 2 = RMB
 function Mouse:mousepressed(x, y, button)
-	local util = Util()
 	local pos = Vec2(x, y)
 	local gridCoord = util:getGameCoordAt(pos)
 	local gameCoord = Vec2(math.floor(gridCoord.x), math.floor(gridCoord.y))

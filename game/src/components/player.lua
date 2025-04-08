@@ -12,11 +12,14 @@ function Player:new(id, pos)
 	self.isPlayer = true
 	self.walkAnimations = {}
 	self.idleAnimations = {}
+	self.loaded = false
 
 	Player.super:new(id, pos)
 end
 
 function Player:load(bus, player)
+	if self.loaded then return end
+
 	local anim8 = require 'lib.anim8'
 
 	self.walkSheet = love.graphics.newImage('assets/player/player_walk.png')
@@ -38,6 +41,7 @@ function Player:load(bus, player)
 	self.image = love.graphics.newImage(self.id)
 	self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations['w'], dt = 0}
 	self.bus = bus
+	self.loaded = true
 end
 
 function Player:save()
@@ -63,7 +67,9 @@ function Player:draw()
 
 	self.currentAnimation.animation:draw(self.currentAnimation.image, vecIso.x, vecIso.y)
 	local x1,y1, x2,y2 = self.hitbox:bbox()
+	local x3, y3, x4, y4 = self.feet:bbox()
 	love.graphics.rectangle('line', x1, y1, x2 - x1, y2 - y1)
+	love.graphics.rectangle('line', x3, y3, x4 - x3, y4 - y3)
 
 end
 
@@ -97,30 +103,44 @@ function Player:move(direction, target, collider, dt)
 	self.pos.x = dx + self.pos.x
 	self.pos.y = dy + self.pos.y
 	self.hitbox:move(screenDelta.x, screenDelta.y)
+	self.feet:move(screenDelta.x, screenDelta.y)
 
-	local collisions = collider:collisions(self.hitbox)
+	local collisions = collider:collisions(self.feet)
 	for other, vec in pairs(collisions) do
-    	self.hitbox:move(4 * vec.x,  4 * vec.y)
+		if other.tag == "collidable" then
+			self.hitbox:move(4 * vec.x,  4 * vec.y)
+			self.feet:move(4 * vec.x,  4 * vec.y)
 
-		local currentScreen = util:getScreenCoordAt(self.pos)
-		currentScreen.x = currentScreen.x +  4 * vec.x
-		currentScreen.y = currentScreen.y + 4 * vec.y
+			local currentScreen = util:getScreenCoordAt(self.pos)
+			currentScreen.x = currentScreen.x +  4 * vec.x
+			currentScreen.y = currentScreen.y + 4 * vec.y
 
-		self.pos = util:getGameCoordAt(currentScreen) 
+			self.pos = util:getGameCoordAt(currentScreen) 
 
-		self.moveQueue = {}
-		self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations[cardinal], dt = 0}
-		return
+			self:idle(cardinal)
+			return
+		elseif other.tag:sub(1, #"exit") == "exit" then
+			local _, exit = other.tag:match("(%w+):(%w+)")
+			self.bus:event({name = "Instance", mapId = exit})
+
+			self:idle(cardinal)
+			return
+		end
 	end
 
 	local distance = Util:getDistance(Vec2(target.x, target.y), self.pos)
 
 	if distance < 0.1 then
-		self.moveQueue = {}
-		self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations[cardinal], dt = 0}
+		self:idle(cardinal)
 		return
 	end
 end
+
+function Player:idle(cardinal)
+	self.moveQueue = {}
+	self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations[cardinal], dt = 0}
+end
+
 
 
 
