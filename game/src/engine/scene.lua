@@ -34,9 +34,6 @@ function Scene:instance(mapId, saveData)
 	-- Bad practice, but let's modify global variable state. Use tileWidth for gridSize analog assuming grid is square. 
 	util:setGridSize(self.map.width)
 
-	-- TODO: set window size and scaling based off of map dimensions.
-	self.window = {translate = Vec2(0, 0), scale = 1}
-
 	local gameObjects = self.map:addCustomLayer("gameObjects")
 
 	-- Player and objects from object layers
@@ -58,6 +55,9 @@ function Scene:instance(mapId, saveData)
 	table.insert(drawables, self.player)
 
 	local playerScreenPos = util:getRectangleScreenPos(self.player.pos, self.player.image:getWidth(), self.player.image:getHeight())
+
+	-- TODO: set window size and scaling based off of map dimensions.
+	self.window = {translate = Vec2(-playerScreenPos.x, -playerScreenPos.y), scale = constants.SCALE_FACTOR}
 
 	-- add player hitbox to the world's collider
 	-- current assumption is that player HB is a rectangle based on its image. 
