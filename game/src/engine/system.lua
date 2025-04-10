@@ -58,9 +58,9 @@ function SystemMan:update(dt)
 end
 
 function SystemMan:draw()
-		for i, val in ipairs(self.systems) do
-			val:draw()
-		end
+	for i, val in ipairs(self.systems) do
+		val:draw()
+	end
 end
 
 function SystemMan:event(event)

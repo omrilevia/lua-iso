@@ -31,9 +31,9 @@ function love.load()
 	
 	local bus = Bus()
 	-- Eventually will be part of a menu
-	local button = Button("Hit 's' to save.", Vec2(0, 60), function() bus:event({name = "save"}) end)
+	local button = Button("Hit 's' to save.", Vec2(0, 80), function() bus:event({name = "save"}) end)
 	local player = Player("assets/player/player.png", Vec2(1, 1))
-	local map = Scene("desert", player)
+	map = Scene("desert", player)
 
 	system = SystemMan({ map, button })
 
@@ -49,6 +49,16 @@ end
 function love.draw()
 	system:draw()
 
+	if constants.HINTS then
+		local x, y = love.mouse:getPosition()
+		local vec = util:getGridCoordAt(Vec2(x, y), map.window)
+		local screen = util:getScreenCoordAt(vec)
+		love.graphics.print("Mouse: " .. vec.x .. " " .. vec.y)
+		love.graphics.print("Mouse px: " .. screen.x .. " " .. screen.y, 0, 20)
+		love.graphics.print("True mouse: " .. x .. " " .. y, 0, 40)
+		love.graphics.print("Window translate/scale: " .. map.window.translate.x .. " " .. map.window.translate.y .. " " .. map.window.scale, 0, 60)
+	end
+	
 	--currentScene:draw()
 end
 

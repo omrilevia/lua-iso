@@ -9,6 +9,9 @@ function Scene:new(mapid, playerRef)
 	self.mapId = mapid
 	self.window = {translate = Vec2(constants.X_OFFSET, constants.Y_OFFSET), scale = constants.SCALE_FACTOR}
 	self.dscale = constants.SCROLL_SCALE_FACTOR
+	self.panSpeed = 500
+	self.pan = {panXTotal = 0, panYTotal = 0}
+	self.panMax = 500
 	Scene.super.new(self, mapid, Vec2(0, 0))
 end
 
@@ -215,19 +218,26 @@ function Scene:update(dt)
 
 	self.map:update(dt)
 
+	if self.pan["panEvent"] then
+		local testX = self.pan.panXTotal + self.pan["panEvent"].translate.x * dt
+		local testY = self.pan.panYTotal + self.pan["panEvent"].translate.y * dt
+
+		if (testX < 0 and testX > -self.panMax) or (testX >=0 and testX < self.panMax)  then
+			self.window.translate.x = self.pan["panEvent"].translate.x * dt + self.window.translate.x
+			self.pan.panXTotal = testX
+		end
+		
+		if (testY < 0 and testY > -self.panMax) or (testY >=0 and testY < self.panMax)  then
+			self.window.translate.y = self.pan["panEvent"].translate.y * dt + self.window.translate.y
+			self.pan.panYTotal = testY
+		end
+	end
+
 	self.queue = {}
 end
 
 -- The scene will retrieve the grid's drawables via getDrawables for global draw order.
 function Scene:draw()
-	local x, y = love.mouse:getPosition()
-	local vec = util:getGridCoordAt(Vec2(x, y), self.window)
-	local screen = util:getScreenCoordAt(vec)
-	love.graphics.print("Mouse: " .. vec.x .. " " .. vec.y)
-	love.graphics.print("Mouse px: " .. screen.x .. " " .. screen.y, 0, 20)
-	love.graphics.print("Window translate/scale: " .. self.window.translate.x .. " " .. self.window.translate.y .. " " .. self.window.scale, 0, 40)
-
-
 	love.graphics.push()
 	love.graphics.translate(self.window.translate.x, self.window.translate.y)
 	love.graphics.scale(self.window.scale)
@@ -248,7 +258,6 @@ function Scene:handleEvent(event)
 		self:removeTile(event)
 	elseif event.name == "TranslateAndScale" then
 		print("Grid:TranslateAndScale. " .. event.translate.x .. " " .. event.translate.y .. " ".. event.scale)
-		table.insert(self.queue, { type = event.name, obj = event} )
 	elseif event.name == "Instance" then
 		-- TODO: Need to save the current map state somewhere so it can be loaded later.
 		self:instance(event.mapId)
@@ -304,11 +313,37 @@ function Scene:wheelmoved(x, y)
 		self.window.scale = self.window.scale * k
 		self.window.translate.x = math.floor(self.window.translate.x + mouse_x * (1 - k))
 		self.window.translate.y = math.floor(self.window.translate.y + mouse_y * (1 - k))
-
-		table.insert(self.queue, {name = "TranslateAndScale", translate = Vec2(self.window.translate.x, self.window.translate.y), scale = self.window.scale})
 	else
 --		print ('wheel x: ' .. x .. ' y: ' .. y)
     end
+end
+
+function Scene:mousemoved(x, y)
+	local width, height = love.graphics.getDimensions()
+	local panX = 0
+	local panY = 0
+
+	if x > (width - 5) then
+		panX = - self.panSpeed
+	elseif x < 5 then
+		panX = self.panSpeed
+	end
+
+	if y > (height - 5) then 
+		panY = - self.panSpeed
+	elseif y < 5 then
+		panY = self.panSpeed
+	end
+
+	local test = self.window.translate:add(Vec2(panX, panY))
+
+	if test.x ~= self.window.translate.x or test.y ~= self.window.translate.y then
+		if self.pan.panEvent then return end 
+
+		self.pan.panEvent = {name = "TranslateAndScale", translate = Vec2(panX, panY), scale = self.window.scale}
+	else
+		self.pan.panEvent = nil
+	end
 end
 
 
