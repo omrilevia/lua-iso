@@ -14,12 +14,6 @@ function Player:save()
 end
 
 function Player:update(dt)
-	for i, event in ipairs(self.moveQueue) do
-		if event.type == "move" then
-			self:move(event.obj.direction, event.obj.target, event.obj.collider, dt)
-		end
-	end
-
 	Player.super.update(self, dt)
 end
 
@@ -74,7 +68,7 @@ function Player:move(direction, target, collider, dt)
 
 			self:idle(cardinal)
 			return
-		elseif other.tag ~= "playerHitbox" and other.tag:sub(-#"footprint") == "footprint" then
+		elseif other.tag ~= "playerHitbox" or other.tag:sub(-#"footprint") == "footprint" then
 			self.hitbox:move(4 * vec.x,  4 * vec.y)
 			self.footprint:move(4 * vec.x,  4 * vec.y)
 

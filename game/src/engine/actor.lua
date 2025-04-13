@@ -64,6 +64,12 @@ function Actor:draw()
 end
 
 function Actor:update(dt)
+	for i, event in ipairs(self.moveQueue) do
+		if event.type == "move" then
+			self:move(event.obj.direction, event.obj.target, event.obj.collider, dt)
+		end
+	end
+	
 	self.sortPos = Vec2(self.pos.x, self.pos.y)
 	self.currentAnimation.animation:update(dt)
 	self.currentAnimation.dt  = self.currentAnimation.dt + dt
