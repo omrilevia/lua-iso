@@ -1,22 +1,22 @@
-Sprite = Component:extend()
+Tile = Component:extend()
 
-function Sprite:new(texId, pos, drawable)
+function Tile:new(texId, pos, drawable)
 	self.id = texId
 	self.pos = pos
 	self.drawable = drawable
-	Sprite.super:new(texId, pos)
+	Tile.super:new(texId, pos)
 end
 
-function Sprite:load()
+function Tile:load()
 	--self.drawable = love.graphics.newImage(self.id)
 end
 
-function Sprite:update(dt)
+function Tile:update(dt)
 end
 
 -- In tiled the position of image is centered around the middle of the base
 -- Have draw the image with reference to its left corner (-width/2, -tileheight)
-function Sprite:draw(highlight)
+function Tile:draw(highlight)
 	-- transform the tile's position to an isometric screen coord
 	local zOffset = constants.MAX_TILE_HEIGHT - constants.TILE_HEIGHT
 	local yOffset = - constants.TILE_HEIGHT
@@ -25,9 +25,18 @@ function Sprite:draw(highlight)
 	local vecIso = util:getScreenCoordAt(self.pos)
 
 	love.graphics.draw(self.drawable.image, self.drawable.quad, xOffset + vecIso.x, yOffset + vecIso.y + zOffset)
+
+	-- draw footprint
+	love.graphics.polygon("line", unpack(self.footprint.bbox))
 end
 
-function Sprite:highlight()
+function Tile:setFootprint(collider, polygon)
+	self.sortPos = polygon.gridPos
+	self.footprint = {shape = collider:polygon(unpack(polygon.getScreenPoly())), bbox = polygon.getScreenPoly()}
+	self.footprint.shape.tag = "collidable"
+end
+
+function Tile:highlight()
 	--self:draw(true)
 end
 

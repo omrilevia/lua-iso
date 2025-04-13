@@ -12,6 +12,7 @@ function Scene:new(mapid, playerRef)
 	self.panSpeed = 500
 	self.pan = {panXTotal = 0, panYTotal = 0}
 	self.panMax = 500
+	self.npcdata = NPCData()
 	Scene.super.new(self, mapid, Vec2(0, 0))
 end
 
@@ -28,6 +29,9 @@ end
 function Scene:instance(mapId, saveData)
 	saveData = saveData or {}
 
+	-- load NPC data
+	self.npcdata = saveData.npcdata or self.npcdata
+
 	self.collider = self.HC.new(constants.TILE_WIDTH * 4)
 	self.mapId = saveData.mapId or mapId
 
@@ -41,7 +45,7 @@ function Scene:instance(mapId, saveData)
 
 	-- Player and objects from object layers
 	local drawables = {}
-	local hitboxes = {}
+	local footprints = {}
 
 	local objectLookup = {}
 	for _, layer in ipairs(self.map.layers) do
@@ -53,25 +57,21 @@ function Scene:instance(mapId, saveData)
 	-- Get player spawn object
 	local playerSpawn = objectLookup["player"][1]
 	local spawnX, spawnY = playerSpawn.x / Constants().TILE_HEIGHT, playerSpawn.y / Constants().TILE_HEIGHT
-	self.player.pos = saveData.playerPos or Vec2(spawnX, spawnY)
+	self.player:setPosition(saveData.playerPos or Vec2(spawnX, spawnY))
 	self.player:load()
 	table.insert(drawables, self.player)
 
-	local playerScreenPos = util:getRectangleScreenPos(self.player.pos, self.player.image:getWidth(), self.player.image:getHeight())
+	local playerScreenPos = util:getRectangleScreenPos(self.player.pos, self.player.width, self.player.height)
 
 	-- TODO: set window size and scaling based off of map dimensions.
 	self.window = {translate = Vec2(-playerScreenPos.x, -playerScreenPos.y), scale = constants.SCALE_FACTOR}
 
 	-- add player hitbox to the world's collider
-	-- current assumption is that player HB is a rectangle based on its image. 
-	self.player.hitbox = self.collider:rectangle(playerScreenPos.x + self.player.image:getWidth()/4, playerScreenPos.y, 
-		self.player.image:getWidth()/2, self.player.image:getHeight())
-	self.player.hitbox.tag = "playerHitbox"
+	-- current assumption is that player HB is a rectangle based on its image.
+	self.player:setHitbox(self.collider, playerScreenPos, "playerHitbox")
 
 	-- useful to know when the player's feet collide with a specific area. Draw rectangle around player's feet.
-	self.player.feet = self.collider:rectangle(playerScreenPos.x + self.player.image:getWidth()/4, playerScreenPos.y + 3/4 * self.player.image:getHeight(), 
-	self.player.image:getWidth()/2, self.player.image:getHeight() * 1/4)
-	self.player.feet.tag = "playerFeet"
+	self.player:setFootprint(self.collider, playerScreenPos, "playerFootprint")
 
 	-- extract object layers from demo map: collisions, sprites, exits
 	local collisions = objectLookup["collisions"]
@@ -82,14 +82,11 @@ function Scene:instance(mapId, saveData)
 	for _, collision in ipairs(collisions) do
 		local gridPos = Vec2(collision.x / constants.TILE_HEIGHT, collision.y / constants.TILE_HEIGHT)
 		local screenPos = util:getScreenCoordAt(gridPos)
-
-		if collision.name ~= "" then
-			collisionNameMap[collision.name] = gridPos
-		end
 		
 		local polygon = {
 			shape = "polygon",
 			points = collision.polygon,
+			gridPos = gridPos,
 			pos = Vec2(screenPos.x, screenPos.y),
 			getScreenPoly = function() 
 				local screenPoly = {}
@@ -102,31 +99,46 @@ function Scene:instance(mapId, saveData)
 			end
 		}
 
-		table.insert(hitboxes, polygon)
-		local hcPoly = self.collider:polygon(unpack(polygon.getScreenPoly()))
-
-
+		if collision.name ~= "" then
+			collisionNameMap[collision.name] = polygon
+		end
+		
+		-- Sprites will draw their own footprint and bounding boxes. Don't need to add them into the footprints.
 		if collision.properties.exit then
+			local hcPoly = self.collider:polygon(unpack(polygon.getScreenPoly()))
+			table.insert(footprints, polygon)
 			hcPoly.tag = "exit:" .. collision.properties.exit
-		else
-			hcPoly.tag = "collidable"
 		end
 	end 
 
-	-- load game objects 
+	-- load game objects: obstacle tiles, NPCs, enemies 
 	for _, obj in ipairs(sprites) do
-		local gid = obj.gid
-		local quad = self.map.tiles[gid].quad
-		local tileset = self.map.tiles[gid].tileset
-		local tilesetImage = self.map.tilesets[tileset].image
-
-
-		local footprint = obj.properties["footprint"]
+		local sprite 
 		local pos = Vec2(obj.x / constants.TILE_HEIGHT, obj.y / constants.TILE_HEIGHT)
 
-		local sprite = Sprite(gid, pos, {image = tilesetImage, quad = quad})
-		sprite.sortPos = collisionNameMap[footprint]
-		sprite.collidable = obj.properties["collidable"]
+		if obj.properties["npc"] then
+			local id = obj.properties["npc"]
+			local npcData = self.npcdata[obj.properties["npc"]]
+			local npcScreenPos = util:getRectangleScreenPos(pos, npcData.width, npcData.height)
+			sprite = NPC(npcData)
+			
+			sprite:setPosition(pos)
+			sprite:setHitbox(self.collider, npcScreenPos, id .. "hitbox")
+			sprite:setFootprint(self.collider, npcScreenPos, id .. "footprint")
+			sprite:setDialogueArea(self.collider, npcScreenPos, id .. "dialog")
+		else 
+			local gid = obj.gid
+			local quad = self.map.tiles[gid].quad
+			local tileset = self.map.tiles[gid].tileset
+			local tilesetImage = self.map.tilesets[tileset].image
+
+			local footprint = obj.properties["footprint"]
+
+			sprite = Tile(gid, pos, {image = tilesetImage, quad = quad})
+
+			sprite:setFootprint(self.collider, collisionNameMap[footprint])
+		end
+		
 
 		table.insert(drawables, sprite)
 	end
@@ -137,12 +149,13 @@ function Scene:instance(mapId, saveData)
 			drawable:draw()
 		end
 
-		for _, hb in ipairs(hitboxes) do
+		-- TODO: set the collision object on the sprite itself so that it can draw its footprint and hitbox
+		-- TODO: add another collider for sprite bounding boxes
+		for _, hb in ipairs(footprints) do
 			if hb.shape == "rectangle" then
 				love.graphics.rectangle("line", hb.pos.x, hb.pos.y, hb.w, hb.h)
 			elseif hb.shape == "polygon" then
 				love.graphics.polygon("line", unpack(hb:getScreenPoly()))
-				love.graphics.points(hb.pos.x, hb.pos.y)
 			end
 		end
 	end
@@ -171,6 +184,7 @@ function Scene:save()
 	scene.id = self.id
 	scene.playerPos = self.player.pos
 	scene.mapId = self.mapId
+	scene.npcdata = self.npcdata
 
 	return scene
 end
@@ -268,7 +282,7 @@ function Scene:addTile(sprite)
 	local gridCoord = util:getGridCoordAt(sprite.pos, self.window)
 	print("Grid:addTile. " .. gridCoord.x .. " " .. gridCoord.y .. " tile: " .. sprite.id)
 	
-	table.insert(self.queue, { type = "add", obj = Sprite(sprite.id, Vec2(gridCoord.x, gridCoord.y)) } )
+	table.insert(self.queue, { type = "add", obj = Tile(sprite.id, Vec2(gridCoord.x, gridCoord.y)) } )
 end
 
 function Scene:removeTile(event)
@@ -296,9 +310,8 @@ function Scene:mousepressed(x, y, button)
 		local gameCoordMouse = util:getGameCoordAt(Vec2(x, y), self.window)
 		print("Player move: " .. gameCoordMouse.x .. " " .. gameCoordMouse.y)
 		local cos, sin = util:getUnitVectorObjToMouse(gameCoordMouse, self.player.pos)
-		
-		self.player.moveQueue = {}
-		table.insert(self.player.moveQueue, {type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse, collider = self.collider}})
+
+		self.player:setMove({type = "move", obj = {direction = Vec2(cos, sin), target = gameCoordMouse, collider = self.collider}})
 	end
 end
 

@@ -3,7 +3,6 @@ if arg[2] == "debug" then
 end
 
 function love.load()
-	--imgui = require "lib.imgui"
 	Object = require "lib.classic"
 
 	require "src.engine.component"
@@ -13,9 +12,9 @@ function love.load()
 	require "src.math2.util"
 	require "src.engine.scene"
 	require "src.engine.constants"
-	require "src.components.sprite"
+	require "src.components.tile"
 	require "src.components.mouse"
-	--require "src.components.gui"
+	require "src.engine.actor"
 	require "src.engine.system"
 	require "src.engine.bus"
 	require "src.engine.event"
@@ -25,6 +24,8 @@ function love.load()
 	require "src.engine.events.dragaddtile"
 	require "src.components.button"
 	require "src.components.player"
+	require "src.data.player.playerdata"
+	require "src.data.npcs.npcdata"
 
 	constants = Constants()
 	util = Util(constants.GRID_SIZE, constants.TILE_WIDTH, constants.TILE_HEIGHT)
@@ -32,7 +33,7 @@ function love.load()
 	local bus = Bus()
 	-- Eventually will be part of a menu
 	local button = Button("Hit 's' to save.", Vec2(0, 80), function() bus:event({name = "save"}) end)
-	local player = Player("assets/player/player.png", Vec2(1, 1))
+	local player = Player(PlayerData())
 	map = Scene("desert", player)
 
 	system = SystemMan({ map, button })
