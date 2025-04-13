@@ -30,7 +30,7 @@ function Scene:instance(mapId, saveData)
 	saveData = saveData or {}
 
 	-- load NPC data
-	self.npcdata = saveData.npcdata or self.npcdata
+	self.npcdata = self.npcdata
 
 	self.collider = self.HC.new(constants.TILE_WIDTH * 4)
 	self.mapId = saveData.mapId or mapId
@@ -61,7 +61,7 @@ function Scene:instance(mapId, saveData)
 	self.player:load()
 	table.insert(drawables, self.player)
 
-	local playerScreenPos = util:getRectangleScreenPos(self.player.pos, self.player.width, self.player.height)
+	local playerScreenPos = util:getRectangleScreenPos(self.player.pos, self.player:getWidth(), self.player:getHeight())
 
 	-- TODO: set window size and scaling based off of map dimensions.
 	self.window = {translate = Vec2(-playerScreenPos.x, -playerScreenPos.y), scale = constants.SCALE_FACTOR}
@@ -118,14 +118,15 @@ function Scene:instance(mapId, saveData)
 
 		if obj.properties["npc"] then
 			local id = obj.properties["npc"]
-			local npcData = self.npcdata[obj.properties["npc"]]
+			local npcData = self.npcdata.data[obj.properties["npc"]]
 			local npcScreenPos = util:getRectangleScreenPos(pos, npcData.width, npcData.height)
 			sprite = NPC(npcData)
 			
 			sprite:setPosition(pos)
 			sprite:setHitbox(self.collider, npcScreenPos, id .. "hitbox")
 			sprite:setFootprint(self.collider, npcScreenPos, id .. "footprint")
-			sprite:setDialogueArea(self.collider, npcScreenPos, id .. "dialog")
+			sprite:load(self.bus)
+			--sprite:setDialogueArea(self.collider, npcScreenPos, id .. "dialog")
 		else 
 			local gid = obj.gid
 			local quad = self.map.tiles[gid].quad

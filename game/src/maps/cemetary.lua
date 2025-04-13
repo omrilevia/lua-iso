@@ -10,7 +10,7 @@ return {
   tilewidth = 64,
   tileheight = 32,
   nextlayerid = 6,
-  nextobjectid = 9,
+  nextobjectid = 11,
   properties = {},
   tilesets = {
     {
@@ -156,6 +156,21 @@ return {
           visible = true,
           properties = {
             ["footprint"] = "cross2"
+          }
+        },
+        {
+          id = 9,
+          name = "npc",
+          type = "",
+          shape = "point",
+          x = 236.71,
+          y = 77.1182,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {
+            ["npc"] = "trader"
           }
         }
       }

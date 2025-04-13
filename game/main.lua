@@ -26,6 +26,7 @@ function love.load()
 	require "src.components.player"
 	require "src.data.player.playerdata"
 	require "src.data.npcs.npcdata"
+	require "src.components.npc"
 
 	constants = Constants()
 	util = Util(constants.GRID_SIZE, constants.TILE_WIDTH, constants.TILE_HEIGHT)

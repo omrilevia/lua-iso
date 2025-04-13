@@ -1,13 +1,13 @@
 Player = Actor:extend()
 
 function Player:new(playerData)
-	Player.super:new(playerData)
+	Player.super.new(self, playerData)
 end
 
 -- TODO: refactor the animation loading into a common class so that NPC can use it. 
 -- parameterize the animation the data by entity id
 function Player:load(bus, player)
-	Player.super:load(bus, player)
+	Player.super.load(self, bus, player)
 end
 
 function Player:save()
@@ -20,31 +20,31 @@ function Player:update(dt)
 		end
 	end
 
-	Player.super:update(dt)
+	Player.super.update(self, dt)
 end
 
 function Player:draw()
-	Player.super:draw()
+	Player.super.draw(self)
 end
 
 function Player:handleEvent(event)
-	Player.super:handleEvent(event)
+	Player.super.handleEvent(self, event)
 end
 
 function Player:setPosition(pos)
-	Player.super:setPosition(pos)
+	Player.super.setPosition(self, pos)
 end
 
 function Player:setHitbox(collider, screenPos, tag) 
-	Player.super:setHitbox(collider, screenPos, tag)
+	Player.super.setHitbox(self, collider, screenPos, tag)
 end
 
 function Player:setFootprint(collider, screenPos, tag)
-	Player.super:setFootprint(collider, screenPos, tag)
+	Player.super.setFootprint(self, collider, screenPos, tag)
 end
 
 function Player:setMove(move)
-	Player.super:setMove(move)
+	Player.super.setMove(self, move)
 end
 
 -- direction is a unit vector 
@@ -57,13 +57,13 @@ function Player:move(direction, target, collider, dt)
 	local cardinal = util:getCardinal(screenDelta, 0.3)
 
 	if self.currentAnimation.dt > .1 then 
-		self.super.currentAnimation = {image = self.walkSheet, animation = self.walkAnimations[cardinal], dt = 0}
+		self.currentAnimation = {image = self.walkSheet, animation = self.walkAnimations[cardinal], dt = 0}
 	end
 
-	self.super.pos.x = dx + self.pos.x
-	self.super.pos.y = dy + self.pos.y
-	self.super.hitbox:move(screenDelta.x, screenDelta.y)
-	self.super.footprint:move(screenDelta.x, screenDelta.y)
+	self.pos.x = dx + self.pos.x
+	self.pos.y = dy + self.pos.y
+	self.hitbox:move(screenDelta.x, screenDelta.y)
+	self.footprint:move(screenDelta.x, screenDelta.y)
 
 	local collisions = collider:collisions(self.footprint)
 	for other, vec in pairs(collisions) do
@@ -74,15 +74,15 @@ function Player:move(direction, target, collider, dt)
 
 			self:idle(cardinal)
 			return
-		elseif other.tag ~= "playerHitbox" then
-			self.super.hitbox:move(4 * vec.x,  4 * vec.y)
-			self.super.footprint:move(4 * vec.x,  4 * vec.y)
+		elseif other.tag ~= "playerHitbox" and other.tag:sub(-#"footprint") == "footprint" then
+			self.hitbox:move(4 * vec.x,  4 * vec.y)
+			self.footprint:move(4 * vec.x,  4 * vec.y)
 
 			local currentScreen = util:getScreenCoordAt(self.pos)
 			currentScreen.x = currentScreen.x +  4 * vec.x
 			currentScreen.y = currentScreen.y + 4 * vec.y
 
-			self.super.pos = util:getGameCoordAt(currentScreen) 
+			self.pos = util:getGameCoordAt(currentScreen) 
 
 			self:idle(cardinal)
 			return
@@ -98,7 +98,7 @@ function Player:move(direction, target, collider, dt)
 end
 
 function Player:idle(cardinal)
-	Player.super:idle(cardinal)
+	Player.super.idle(self, cardinal)
 end
 
 

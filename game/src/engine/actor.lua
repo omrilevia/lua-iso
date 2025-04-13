@@ -6,17 +6,11 @@ function Actor:new(data)
 	-- tiles per second
 	self.speed = data.speed
 
-	-- animation ids
-	self.walkAnimationId = data.walkAnimationId
-	self.idleAnimationId = data.idleAnimationId
+	-- animation data
+	self.animationData = data.animationData
 
-	-- frame dimensions 
-	self.width = data.width 
-	self.height = data.height 
-
-	-- animation frame counts
-	self.walkAnimationFrames = data.walkAnimationFrames
-	self.idleAnimationFrames = data.idleAnimationFrames
+	self.width = data.width or self.animationData.width
+	self.height = data.height or self.animationData.height
 
 	-- collision data 
 	self.footprint = {}
@@ -36,23 +30,24 @@ function Actor:load(bus, actor)
 
 	local anim8 = require 'lib.anim8'
 
-	self.walkSheet = love.graphics.newImage(self.walkAnimationId)
-	self.idleSheet = love.graphics.newImage(self.idleAnimationId)
-	local gWalk = anim8.newGrid(self.width, self.height, self.walkSheet:getWidth(), self.walkSheet:getHeight(), 0, 0, 0)
-	local gIdle = anim8.newGrid(self.width, self.height, self.idleSheet:getWidth(), self.idleSheet:getHeight(), 0, 0, 0)
+	self.walkSheet = love.graphics.newImage(self.animationData.walkAnimationId)
+	self.idleSheet = love.graphics.newImage(self.animationData.idleAnimationId)
+	local gWalk = anim8.newGrid(self.animationData.width, self.animationData.height, 
+		self.walkSheet:getWidth(), self.walkSheet:getHeight(), 0, 0, 0)
+	local gIdle = anim8.newGrid(self.animationData.width, self.animationData.height, 
+		self.idleSheet:getWidth(), self.idleSheet:getHeight(), 0, 0, 0)
 	
-	local directions = {'n', 'nw', 'w', 'sw', 's', 'se', 'e', 'ne'}
-	for i = 1, 8 do 
-		local direction = directions[i] 
+	for i = 1, #self.animationData.animationDirections do 
+		local direction = self.animationData.animationDirections[i] 
 
-		local walkFrames = gWalk(self.walkAnimationFrames, i)
-		self.walkAnimations[direction] = anim8.newAnimation(walkFrames, 0.1)
+		local walkFrames = gWalk(self.animationData.walkAnimationFrames, i)
+		self.walkAnimations[direction] = anim8.newAnimation(walkFrames, self.animationData.walkDuration)
 
-		local idleFrames = gIdle(self.idleAnimationFrames, i)
-		self.idleAnimations[direction] = anim8.newAnimation(idleFrames, 0.1)
+		local idleFrames = gIdle(self.animationData.idleAnimationFrames, i)
+		self.idleAnimations[direction] = anim8.newAnimation(idleFrames, self.animationData.idleDuration)
 	end
 
-	self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations['w'], dt = 0}
+	self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations[self.animationData.startDirection], dt = 0}
 	self.bus = bus
 	self.loaded = true
 end
@@ -102,4 +97,12 @@ end
 function Actor:idle(cardinal)
 	self.moveQueue = {}
 	self.currentAnimation = {image = self.idleSheet, animation = self.idleAnimations[cardinal], dt = 0}
+end
+
+function Actor:getWidth()
+	return self.width or self.animationData.width
+end
+
+function Actor:getHeight()
+	return self.height or self.animationData.height
 end
