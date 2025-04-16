@@ -7,6 +7,8 @@ end
 -- TODO: refactor the animation loading into a common class so that NPC can use it. 
 -- parameterize the animation the data by entity id
 function Player:load(bus, player)
+	self.dialogArea = nil
+
 	Player.super.load(self, bus, player)
 end
 
@@ -60,14 +62,38 @@ function Player:move(direction, target, collider, dt)
 	self.footprint:move(screenDelta.x, screenDelta.y)
 
 	local collisions = collider:collisions(self.footprint)
+	
+	if self:resolveCollision(collisions, cardinal) then 
+		return 
+	end
+
+	local distance = Util:getDistance(Vec2(target.x, target.y), self.pos)
+
+	if distance < 0.1 then
+		self:idle(cardinal)
+		return
+	end
+end
+
+function Player:resolveCollision(collisions, cardinal)
+	
+	local dialogCollided = false 
+
 	for other, vec in pairs(collisions) do
 		
+		-- Check entering or exiting another area.
+		-- Check entering a dialog area. 
+		-- Finally check collision with an object or npc's footprint. Ignore our own hitbox. 
 		if other.tag:sub(1, #"exit") == "exit" then
 			local _, exit = other.tag:match("(%w+):(%w+)")
-			self.bus:event({name = "Instance", mapId = exit})
+			self.bus:event(Instance(exit))
 
 			self:idle(cardinal)
-			return
+			return true
+		elseif other.tag:sub(1, #"dialog") == "dialog" then
+			local _, npc = other.tag:match("(%w+):(%w+)")
+			self:setInDialogArea(npc)
+			dialogCollided = true
 		elseif other.tag ~= "playerHitbox" or other.tag:sub(-#"footprint") == "footprint" then
 			self.hitbox:move(4 * vec.x,  4 * vec.y)
 			self.footprint:move(4 * vec.x,  4 * vec.y)
@@ -79,20 +105,33 @@ function Player:move(direction, target, collider, dt)
 			self.pos = util:getGameCoordAt(currentScreen) 
 
 			self:idle(cardinal)
-			return
+			return true
 		end
 	end
 
-	local distance = Util:getDistance(Vec2(target.x, target.y), self.pos)
+	if self:isInDialogArea() and not dialogCollided then self:leaveDialogArea() end 
 
-	if distance < 0.1 then
-		self:idle(cardinal)
-		return
-	end
+	return false
 end
 
 function Player:idle(cardinal)
 	Player.super.idle(self, cardinal)
+end
+
+function Player:isInDialogArea() 
+	return self.dialogArea ~= nil
+end
+
+function Player:setInDialogArea(npcDialog) 
+	if self.dialogArea and self.dialogArea.npc == npcDialog then return end
+
+	self.bus:event(EnterDialogArea(npcDialog))
+	self.dialogArea = {npc = npcDialog}
+end
+
+function Player:leaveDialogArea()
+	self.bus:event(LeaveDialogArea())
+	self.dialogArea = nil
 end
 
 

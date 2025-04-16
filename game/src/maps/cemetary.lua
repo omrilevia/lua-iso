@@ -10,7 +10,7 @@ return {
   tilewidth = 64,
   tileheight = 32,
   nextlayerid = 6,
-  nextobjectid = 11,
+  nextobjectid = 17,
   properties = {},
   tilesets = {
     {
@@ -246,6 +246,32 @@ return {
           },
           properties = {
             ["exit"] = "desert"
+          }
+        },
+        {
+          id = 16,
+          name = "",
+          type = "",
+          shape = "polygon",
+          x = 213.989,
+          y = 92.0828,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          polygon = {
+            { x = 0, y = 0 },
+            { x = 13.1625, y = 22.6395 },
+            { x = 49.6665, y = 38.0835 },
+            { x = 57.5641, y = 11.934 },
+            { x = 51.9481, y = -3.51 },
+            { x = 35.802, y = -36.504 },
+            { x = 21.2355, y = -41.5935 },
+            { x = 0, y = -49.842 },
+            { x = -8.77501, y = -28.431 }
+          },
+          properties = {
+            ["dialog"] = "trader"
           }
         }
       }

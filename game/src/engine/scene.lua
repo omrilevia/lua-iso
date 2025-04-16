@@ -86,6 +86,7 @@ function Scene:instance(mapId, saveData)
 		local polygon = {
 			shape = "polygon",
 			points = collision.polygon,
+			properties = collision.properties,
 			gridPos = gridPos,
 			pos = Vec2(screenPos.x, screenPos.y),
 			getScreenPoly = function() 
@@ -98,7 +99,7 @@ function Scene:instance(mapId, saveData)
 				return screenPoly
 			end
 		}
-
+		
 		if collision.name ~= "" then
 			collisionNameMap[collision.name] = polygon
 		end
@@ -108,6 +109,12 @@ function Scene:instance(mapId, saveData)
 			local hcPoly = self.collider:polygon(unpack(polygon.getScreenPoly()))
 			table.insert(footprints, polygon)
 			hcPoly.tag = "exit:" .. collision.properties.exit
+
+		-- NPC dialog area
+		elseif collision.properties.dialog then
+			collisionNameMap[collision.properties.dialog] = polygon
+			local hcPoly = self.collider:polygon(unpack(polygon.getScreenPoly()))
+			hcPoly.tag = "dialog:" .. collision.properties.dialog
 		end
 	end 
 
@@ -125,6 +132,7 @@ function Scene:instance(mapId, saveData)
 			sprite:setPosition(pos)
 			sprite:setHitbox(self.collider, npcScreenPos, id .. "hitbox")
 			sprite:setFootprint(self.collider, npcScreenPos, id .. "footprint")
+			sprite:setDialogArea(collisionNameMap[obj.properties["npc"]])
 			sprite:load(self.bus)
 			--sprite:setDialogueArea(self.collider, npcScreenPos, id .. "dialog")
 		else 

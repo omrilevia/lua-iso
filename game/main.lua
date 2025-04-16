@@ -17,11 +17,12 @@ function love.load()
 	require "src.engine.actor"
 	require "src.engine.system"
 	require "src.engine.bus"
+
 	require "src.engine.event"
-	require "src.engine.events.mousetile"
-	require "src.engine.events.placetile"
-	require "src.engine.events.removetile"
-	require "src.engine.events.dragaddtile"
+	require "src.engine.events.map.instance"
+	require "src.engine.events.player.enterdialogarea"
+	require "src.engine.events.player.leavedialogarea"
+
 	require "src.components.button"
 	require "src.components.player"
 	require "src.data.player.playerdata"
