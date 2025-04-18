@@ -33,7 +33,7 @@ end
 function Tile:setFootprint(collider, polygon)
 	self.sortPos = polygon.gridPos
 	self.footprint = {shape = collider:polygon(unpack(polygon.getScreenPoly())), bbox = polygon.getScreenPoly()}
-	self.footprint.shape.tag = "collidable"
+	self.footprint.shape.tag = "footprint"
 end
 
 function Tile:highlight()

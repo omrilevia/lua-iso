@@ -206,7 +206,9 @@ return {
             { x = 20.5731, y = 20.5731 },
             { x = 5.19524, y = 20.5731 }
           },
-          properties = {}
+          properties = {
+            ["footprint"] = "cross1"
+          }
         },
         {
           id = 7,
@@ -225,7 +227,9 @@ return {
             { x = 18.1833, y = -7.37724 },
             { x = -1.76638, y = -7.79286 }
           },
-          properties = {}
+          properties = {
+            ["footprint"] = "cross2"
+          }
         },
         {
           id = 8,

@@ -199,7 +199,9 @@ return {
             { x = -1.84434, y = -9.55702 },
             { x = 0.922169, y = -6.62285 }
           },
-          properties = {}
+          properties = {
+            ["footprint"] = "cactus"
+          }
         },
         {
           id = 40,

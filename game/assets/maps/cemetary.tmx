@@ -56,9 +56,15 @@
  </objectgroup>
  <objectgroup id="4" name="collisions">
   <object id="6" name="cross1" x="194.011" y="66.5817">
+   <properties>
+    <property name="footprint" value="cross1"/>
+   </properties>
    <polygon points="0,0 18.8068,1.55857 20.5731,20.5731 5.19524,20.5731"/>
   </object>
   <object id="7" name="cross2" x="262.9" y="83.3103">
+   <properties>
+    <property name="footprint" value="cross2"/>
+   </properties>
    <polygon points="0,0 19.7419,-0.207809 18.1833,-7.37724 -1.76638,-7.79286"/>
   </object>
   <object id="8" x="512" y="224">

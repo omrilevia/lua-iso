@@ -100,8 +100,8 @@ function Scene:instance(mapId, saveData)
 			end
 		}
 		
-		if collision.name ~= "" then
-			collisionNameMap[collision.name] = polygon
+		if collision.properties.footprint then
+			collisionNameMap[collision.properties.footprint] = polygon
 		end
 		
 		-- Sprites will draw their own footprint and bounding boxes. Don't need to add them into the footprints.

@@ -94,7 +94,10 @@ function Player:resolveCollision(collisions, cardinal)
 			local _, npc = other.tag:match("(%w+):(%w+)")
 			self:setInDialogArea(npc)
 			dialogCollided = true
-		elseif other.tag ~= "playerHitbox" or other.tag:sub(-#"footprint") == "footprint" then
+
+		-- TODO: the secondary check for footprint can be extended to check if the colliding object's tag 
+		-- is within a list of collidable tags. 
+		elseif other.tag ~= "playerHitbox" and other.tag:sub(-#"footprint") == "footprint" then
 			self.hitbox:move(4 * vec.x,  4 * vec.y)
 			self.footprint:move(4 * vec.x,  4 * vec.y)
 
